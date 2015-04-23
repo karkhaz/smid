@@ -1,1 +1,0 @@
-/home/kareem/.vim/syntax/fsa.vim
