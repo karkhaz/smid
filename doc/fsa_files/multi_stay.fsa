@@ -1,0 +1,5 @@
+pre s1 {}    pre s2 {}    pre s3 {}
+
+web_page file_dialog -- keys [ Down ] --> stay
+
+all file_dialog -- keys [ Ctrl+R ] --> stay

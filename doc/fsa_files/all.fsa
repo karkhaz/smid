@@ -1,0 +1,9 @@
+# These are declaring states, ignore them for now
+pre s1 {}    pre s2 {}    pre s3 {}
+
+--> final
+
+all -- keys [ Ctrl+Q ] --> final
+
+# This is equivalent to
+# s1 s2 s3 -- keys [ Ctrl+Q ] --> final

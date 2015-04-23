@@ -1,0 +1,94 @@
+% Colours, based on solarized dark:
+% http://ethanschoonover.com/solarized
+\newcommand{\sbase03} {\#002b36}
+\newcommand{\sbase02} {\#073642}
+\newcommand{\sbase01} {\#586e75}
+\newcommand{\sbase00} {\#657b83}
+\newcommand{\sbase0}  {\#839496}
+\newcommand{\sbase1}  {\#93a1a1}
+\newcommand{\sbase2}  {\#eee8d5}
+\newcommand{\sbase3}  {\#fdf6e3}
+\newcommand{\syellow} {\#b58900}
+\newcommand{\sorange} {\#cb4b16}
+\newcommand{\sred}    {\#dc322f}
+\newcommand{\smagenta}{\#d33682}
+\newcommand{\sviolet} {\#6c71c4}
+\newcommand{\sblue}   {\#268bd2}
+\newcommand{\scyan}   {\#2aa198}
+\newcommand{\sgreen}  {\#859900}
+
+% Changing from light to dark Solarized can be done by commenting
+% (out) the appropriate commands below. Note that a few of the
+% non-span elements (body, a,...) are not handled by hevea and so are
+% defined in the actual CSS file global.css. That file contain
+% hard-coded colour values and so needs to be changed by hand.
+
+% Colour mnemonics for dark scheme:
+\newcommand{\siforegrnd}   {\sbase0}
+\newcommand{\siforegrndhl}{\sbase1}
+\newcommand{\sibackgrnd}   {\sbase03}
+\newcommand{\sibackgrndhl}{\sbase02}
+\newcommand{\sicomment}    {\sbase01}
+
+% Colour mnemonics for light scheme:
+\newcommand{\sforegrnd}  {\sbase00}
+\newcommand{\sforegrndhl}{\sbase01}
+\newcommand{\sbackgrnd}  {\sbase3}
+\newcommand{\sbackgrndhl}{\sbase2}
+\newcommand{\scomment}   {\sbase1}
+
+\newcommand{\titlespace}{}
+
+\newstyle{.lstlisting}{
+  border: 1pt solid \sicomment;
+  border-radius: 0.5em;
+  padding: 0.5em 0.5em 0.5em 1.5em;
+  background-color:\sibackgrndhl;
+  color:\siforegrndhl;
+  max-height: 15em;
+  overflow: scroll;
+  overflow-x: hidden;
+  font-family: inconsolata;
+}
+
+\newstyle{.section}{
+  border-radius: 0.5em;
+  border: 3pt solid \sforegrnd;
+  padding: 0.5em;
+  color: \sforegrndhl;
+  background-color:\sbackgrndhl;
+}
+\newstyle{.subsection}{
+  border: 2pt solid \sforegrnd;
+  border-radius: 0.5em;
+  padding: 0.5em;
+  color: \sforegrndhl;
+  background-color:\sbackgrndhl;
+}
+\newstyle{.subsubsection}{
+  border: 1pt solid \sforegrnd;
+  border-radius: 0.5em;
+  padding: 0.5em;
+  color: \sforegrndhl;
+  background-color:\sbackgrndhl;
+}
+
+\newstyle{.titlemain}{
+}
+\newstyle{.titlerest}{
+}
+
+\newstyle{.title}{
+  background-color: \sbackgrndhl;
+  border-radius: 2.5em;
+}
+
+\newstyle{.toc}{
+  padding: 0em 0em 0em 1em;
+}
+
+\newstyle{.li-itemize}{
+  margin: 0pt;
+}
+
+\loadcssfile{global.css}

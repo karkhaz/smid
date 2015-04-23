@@ -1,0 +1,9 @@
+init -->
+
+pre init { WINDOW_NAME="Mozilla Firefox" }
+
+all -- keys [ Ctrl+Shift+H ] --> history_window
+
+pre history_window { WINDOW_NAME="Library" }
+
+post history_window { WINDOW_NAME="Mozilla Firefox" }

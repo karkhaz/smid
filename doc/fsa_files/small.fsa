@@ -1,0 +1,23 @@
+init -->
+--> final
+
+init -- keys [ Ctrl+N ] --> new_document
+init -- keys [ Ctrl+O ] --> open_dialog
+
+all -- keys [ Ctrl+Q ] --> final
+
+new_document --
+  keys [ Ctrl+F ]
+  verb "Some search text"
+  keys [ Return ]
+--> new_document
+
+new_document open_dialog -- keys [ F1 ] --> help_dialog
+new_document open_dialog -- keys [ PageUp ] --> stay
+
+
+all init help_dialog -- keys [ Ctrl+S ] --> stay
+
+pre init {
+WINDOW_NAME="Random word processor"
+}

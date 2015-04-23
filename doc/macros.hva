@@ -1,0 +1,1 @@
+\newcommand{\epsfbox}[1]{\imgsrc{#1.png}}

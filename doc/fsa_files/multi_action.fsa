@@ -1,0 +1,5 @@
+foo --
+  keys [ Ctrl+f ]
+  line "search_terms.txt"
+  keys [ Return ]
+--> bar

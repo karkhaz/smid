@@ -1,0 +1,45 @@
+# Small example of an FSA, for a fictional word processor
+
+# Initial state is a state identifier with an outgoing arrow
+foo -->
+
+# Final state is a state identifier with an incoming arrow
+--> bar
+
+# From the initial state, we can press Ctrl+O to go to state `open_dialog'
+# or Ctrl+N to create a new document
+foo -- keys [ Ctrl+N ] --> new_document
+foo -- keys [ Ctrl+O ] --> open_dialog
+
+# From all states, pressing Ctrl+Q goes to the final state.@ means all
+all  -- keys [ Ctrl+Q ] --> bar
+
+# In a new document, we can press Ctrl+F to bring up the find dialog,
+# then type in a string to search for, and then press Return to
+# search. Note that newlines don't matter.
+
+new_document --
+  keys [ Ctrl+F ]
+  verb "Some search text"
+  keys [ Return ]
+--> new_document
+
+# From both new_document and open_dialog, we can ask for help
+new_document open_dialog -- keys [ F1 ] --> help_dialog
+#
+# From both new_document and open_dialog, we can scroll up and down
+# and remain on the same state.
+new_document open_dialog -- keys [ PageUp ] --> stay
+
+
+# From all states except for the initial state and the help dialog,
+# pressing Ctrl+S saves the document and remains on the same state
+all  foo help_dialog -- keys [ Ctrl+S ] --> stay
+
+# This thing is a `state hook'. Whenever we get to state `foo' (which
+# is just once, since foo is the initial state) then the text in
+# between the curly braces gets dumped verbatim into the run script.
+
+pre foo {
+WINDOW_NAME="Random word processor"
+}

@@ -1,0 +1,10 @@
+pre s1 {}    pre s2 {}    pre s3 {}
+
+init -->
+--> quit
+
+init -- keys [ 1 ] --> s1
+init -- keys [ 2 ] --> s2
+init -- keys [ 3 ] --> s3
+
+all init -- keys [ Ctrl+Q ] --> quit

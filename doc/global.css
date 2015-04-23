@@ -1,0 +1,74 @@
+@font-face{
+  font-family: signika;
+  src: url(signika.ttf);
+}
+
+@font-face{
+  font-family: inconsolata;
+  src: url(inconsolata.otf);
+}
+
+body{
+  background-color: #fdf6e3;
+  color: #657b83;
+  padding: 1em;
+  font-family: Verdana;
+  font-weight: normal;
+  margin: 0 auto;
+}
+
+a{
+  padding: 0.1em;
+  border-radius: 0.5em;
+  text-decoration: none;
+}
+a:link{
+  color: #6c71c4;
+  text-decoration: none;
+}
+a:visited{
+  color: #d33682;
+  border-radius: 0.5em;
+  text-decoration: none;
+}
+a:visited:hover{
+  background-color: #6c71c4;
+  background-color: #d33682;
+  text-decoration: none;
+}
+a:hover{
+  background-color: #6c71c4;
+  color: #fdf6e3;
+  text-decoration: none;
+}
+a:active{
+  background-color: #859900;
+  color: #fdf6e3;
+  text-decoration: none;
+}
+a:visited:active{
+  background-color: #859900;
+  color: #fdf6e3;
+  text-decoration: none;
+}
+
+h1, h2, h3, h4, h5{
+  font-family: signika;
+  font-weight: normal;
+}
+
+code {
+  font-family: inconsolata;
+  font-size: 12pt;
+}
+
+img{
+  max-width: 100%;
+  max-height: 250px;
+  margin: auto;
+  display: block;
+}
+
+a img {
+  display: inline;
+}

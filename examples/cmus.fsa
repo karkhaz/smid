@@ -1,0 +1,80 @@
+# Initial and final states
+--> quit
+start -->
+
+pre start {
+xfce4-terminal -e cmus &
+WINDOW_NAME=cmus
+}
+
+post quit {
+killall xfce4-terminal
+}
+
+# Quitting cmus
+all start search -- keys [ q y ] --> quit
+# Invoke quit dialog, then change our mind about quitting
+all start search -- keys [ q n ] --> stay
+
+# We can always switch to a different view
+all search artist_pane     -- keys [ 1 ] --> artist_pane
+all search library_view    -- keys [ 2 ] --> library_view
+all search playlist_view   -- keys [ 3 ] --> playlist_view
+all search play_queue_view -- keys [ 4 ] --> play_queue_view
+all search browser_view    -- keys [ 5 ] --> browser_view
+all search filters_view    -- keys [ 6 ] --> filters_view
+all search settings_view   -- keys [ 7 ] --> settings_view
+
+# We can always scroll up and down
+all start search -- keys [ j ] --> stay
+all start search -- keys [ k ] --> stay
+
+# We can always play and pause
+# Apparently cmus stops calling the functions we're interested in
+# while it's playing music, so commenting this out
+# all start search -- keys [ c ] --> stay
+
+
+# ARTIST / ALBUM VIEW (VIEW 1) ######################################
+
+# Switching between the two panes
+artist_pane -- keys [ Tab ] --> album_pane
+album_pane  -- keys [ Tab ] --> artist_pane
+
+# Searching
+artist_pane -- keys [ Slash ] --> search
+
+search --
+  line "examples/artists.lines"
+  keys [ Return ]
+--> artist_pane
+
+# Expand an album in artist pane
+artist_pane -- keys [ space ] --> artist_pane
+
+# Playing a track (we don't want to do this, see above for [c]
+#album_pane artist_pane -- keys [ Return ] --> stay
+
+# Adding items to the playlist
+album_pane -- keys [ y ] --> album_pane
+# Append items to play queue
+album_pane -- keys [ e ] --> album_pane
+# Prepend items to play queue
+album_pane -- keys [ E ] --> album_pane
+
+
+# PLAYLIST & PLAY QUEUE (VIEWS 3 & 4) ###############################
+
+# delete an item
+playlist_view play_queue_view -- keys [ d ] --> stay
+# play an item
+playlist_view play_queue_view -- keys [ Return ] --> stay
+
+
+# BROWSER (VIEW 5) ##################################################
+
+# Enter a directory
+browser_view -- keys [ Return ] --> stay
+
+
+# FILTER  (VIEW 6) ##################################################
