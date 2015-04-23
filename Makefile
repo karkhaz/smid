@@ -5,18 +5,18 @@
 FSA_FILES=$(wildcard examples/*.fsa)
 FSA_DIAGRAMS=$(patsubst examples/%.fsa,out/%.png,$(FSA_FILES))
 
-BIN=src/uidrive.native
+BIN=uidrive.native
 
 SRC=$(wildcard src/*.ml) $(wildcard src/*.mll) \
 		$(wildcard src/*.mly)
 
-TARGETS=$(BIN)
+TARGETS=src/$(BIN)
 
 default: $(TARGETS)
 
-$(BIN): $(SRC)
+src/$(BIN): $(SRC)
 	@echo Compiling
-	@cd src && ocamlbuild -lib unix -lib str uidrive.native
+	@cd src && ocamlbuild -lib unix -lib str $(BIN)
 
 clean:
-	@rm $(TARGETS)
+	@-rm -rf  src/$(BIN)  src/_build
