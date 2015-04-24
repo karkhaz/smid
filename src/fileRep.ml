@@ -4,6 +4,7 @@
  *)
 
 module L = List
+open Std
 
 type initial_state = string
 type final_state = string

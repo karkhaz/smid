@@ -8,7 +8,9 @@ module S = String
 module L = List
 module C = Config
 module U = Util
+module TR = TRList
 open Printf
+open Std
 
 type state = string
 type hook = string
@@ -41,7 +43,7 @@ let normalise frep =
     let all_states = L.fold_left (fun acc entry ->
       acc @ (get_states_fun entry)
     ) [] frep
-    in L.sort_uniq compare all_states
+    in TR.sort_uniq compare all_states
   in let get_all_states frep fsa =
     let get_states = function
       | FR.InitialStates e
@@ -77,7 +79,7 @@ let normalise frep =
       let all_states = L.fold_left (fun acc entry ->
         acc @ (hooks_of_entry entry)
       ) [] frep
-      in L.sort_uniq compare all_states
+      in TR.sort_uniq compare all_states
     in {fsa with hooks = hooks_from_frep}
 
   in let get_transs frep fsa =
@@ -138,7 +140,7 @@ let normalise frep =
       let all_transs = L.fold_left (fun acc entry ->
         acc @ (transs_of_entry entry)
       ) [] frep
-      in L.sort_uniq compare all_transs
+      in TR.sort_uniq compare all_transs
     in {fsa with transs = transs_from_frep}
 
   in let empty = {
@@ -207,7 +209,7 @@ let dot_of fsa =
     dot_of_is fsa.inits
     @ dot_of_fs fsa.finals
     @ dot_of_ts fsa.transs
-  in let lines = L.sort_uniq compare lines
+  in let lines = TR.sort_uniq compare lines
   in let body = L.fold_left (fun acc line ->
     "  " ^ line ^ "\n" ^ acc
       ) "" lines

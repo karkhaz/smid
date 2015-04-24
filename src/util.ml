@@ -6,6 +6,8 @@
 open Printf
 module L = List
 
+open Std
+
 let lines_of_file fname =
   try
     let in_chan = open_in fname

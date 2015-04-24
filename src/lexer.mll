@@ -9,6 +9,7 @@
   module C = Config
   open Parser
   open Printf
+  open Std
 
   let incr_ln lexbuf =
     let pos = lexbuf.L.lex_curr_p
