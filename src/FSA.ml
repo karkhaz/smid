@@ -186,7 +186,7 @@ let dot_of fsa =
           let keys = L.fold_left (fun acc key ->
               (dot_escape key) ^ " " ^ acc
             ) "" a
-          in "[" ^ (S.trim keys) ^ "]"
+          in "[" ^ (trim keys) ^ "]"
         | TypeAction {fname; text} ->
             let str = match fname with
               | Some fname -> ">" ^ fname
@@ -213,7 +213,7 @@ let dot_of fsa =
   in let body = L.fold_left (fun acc line ->
     "  " ^ line ^ "\n" ^ acc
       ) "" lines
-  in "digraph G {\n  node [shape=box];\n  " ^ (S.trim body) ^ "\n}\n"
+  in "digraph G {\n  node [shape=box];\n  " ^ (trim body) ^ "\n}\n"
 
 
 
@@ -237,7 +237,7 @@ let script_of fsa run_length =
          in let b = "\n# Pre-hooks for <" ^ state ^ ">:\n"
          in let e = "# End of pre-hooks for <" ^ state ^ ">\n"
          in let hooks = L.fold_left (fun acc (_, hook) ->
-           (S.trim hook) ^ "\n" ^ acc
+           (trim hook) ^ "\n" ^ acc
          ) "" hooks
          in b ^ hooks ^ e
     else ""
@@ -255,7 +255,7 @@ let script_of fsa run_length =
          in let b = "\n# Post-hooks for <" ^ state ^ ">:\n"
          in let e = "# End of post-hooks for <" ^ state ^ ">\n"
          in let hooks = L.fold_left (fun acc (_, hook) ->
-           (S.trim hook) ^ "\n" ^ acc
+           (trim hook) ^ "\n" ^ acc
          ) "" hooks
          in b ^ hooks ^ e
     else ""

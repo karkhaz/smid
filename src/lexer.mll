@@ -26,7 +26,7 @@
       then ""
       else "     ----\nlex: "
     in last_mode := mode;
-    let str = String.trim lexeme
+    let str = trim lexeme
     in if !C.debug
     then  eprintf "lex: %s%3d [%4s] %s\n%!"
             sep lexbuf.L.lex_curr_p.L.pos_lnum mode str
