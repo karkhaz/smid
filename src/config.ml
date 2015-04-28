@@ -4,8 +4,6 @@
  *   Date: 2015
  *)
 
-open Std
-
 let debug = ref false
 
 let loops = ref true

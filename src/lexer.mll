@@ -9,7 +9,6 @@
   module C = Config
   open Parser
   open Printf
-  open Std
 
   let incr_ln lexbuf =
     let pos = lexbuf.L.lex_curr_p
@@ -26,7 +25,7 @@
       then ""
       else "     ----\nlex: "
     in last_mode := mode;
-    let str = trim lexeme
+    let str = String.trim lexeme
     in if !C.debug
     then  eprintf "lex: %s%3d [%4s] %s\n%!"
             sep lexbuf.L.lex_curr_p.L.pos_lnum mode str

@@ -6,7 +6,6 @@
 %{
   open FileRep
   module L = List
-  open Std
 %}
 
 %token <string> IDENT

@@ -10,7 +10,6 @@ open Printf
 module C = Config
 module FR = FileRep
 open FSA
-open Std
 
 type mode = CompileOnly
           | DOT
