@@ -25,6 +25,9 @@
 %token POST
 %token GETS
 
+%token INITIAL
+%token FINAL
+
 %token EOF
 
 %token SEMI
@@ -62,8 +65,8 @@ line: initial_states_line   { InitialStates  $1 }
     | transition_line       { Transition     $1 }
 
 
-initial_states_line: state_plus ARROW_END  { $1 }
-final_states_line:   ARROW_END  state_plus { $2 }
+initial_states_line: INITIAL state_plus { $2 }
+final_states_line:   FINAL   state_plus { $2 }
 
 state_plus: state_string                { [$1] }
           | L_BRACK state_list R_BRACK  {  $2  }

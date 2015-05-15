@@ -22,7 +22,7 @@ let mode = ref None
 let max_depth = ref 5
 
 let usage_msg =
-"Usage: uidrive -c FSA_FILE
+"Usage: uidrive -c [OPTION...] FSA_FILE
        uidrive -d [OPTION...] FSA_FILE
        uidrive -r [OPTION...] FSA_FILE
        uidrive -s [OPTION...] FSA_FILE

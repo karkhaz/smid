@@ -47,31 +47,40 @@ let line = [^ '\n']*
 let nl = '\n'
 let id = ['a'-'z' '_' 'A'-'Z'] ['a'-'z' '_' 'A'-'Z' '0'-'9']+
 
+(* Top-level lexing rules *)
 rule lex = parse
-  | nl          as l { dbc "top" l lexbuf; incr_ln lexbuf; lex lexbuf }
-  | '#' line nl as l { dbs "top" l lexbuf; incr_ln lexbuf; lex lexbuf }
-  | ws               {                                     lex lexbuf }
+  | nl            as l { dbc "top" l lexbuf; incr_ln lexbuf; lex lexbuf }
+  | '#' line nl   as l { dbs "top" l lexbuf; incr_ln lexbuf; lex lexbuf }
+  | ws                 {                                     lex lexbuf }
+  | ','           as l { dbc "top" l lexbuf;                 lex lexbuf }
 
-  | "keys"      as l { dbs "top" l lexbuf; read_keys     () lexbuf }
-  | "verb"      as l { dbs "top" l lexbuf; read_verbatim () lexbuf }
-  | "line"      as l { dbs "top" l lexbuf; read_line () lexbuf }
-  | "{"         as l { dbc "top" l lexbuf; read_bash "" lexbuf }
+  | "keys"        as l { dbs "top" l lexbuf; read_keys     () lexbuf }
+  | "text"        as l { dbs "top" l lexbuf; read_verbatim () lexbuf }
+  | "line"        as l { dbs "top" l lexbuf; read_line () lexbuf }
+  | "{"           as l { dbc "top" l lexbuf; read_bash "" lexbuf }
 
-  | "stay"      as l { dbs "top" l lexbuf; STAY }
-  | "pre"       as l { dbs "top" l lexbuf; PRE  }
-  | "post"      as l { dbs "top" l lexbuf; POST }
-  | ":="        as l { dbs "top" l lexbuf; GETS }
-  | "all"       as l { dbs "top" l lexbuf; ALL  }
-  | "-->"       as l { dbs "top" l lexbuf; ARROW_END   }
-  | "->"        as l { dbs "top" l lexbuf; ARROW_END   }
-  | "--"        as l { dbs "top" l lexbuf; ARROW_BEGIN }
-  | "["         as l { dbc "top" l lexbuf; L_BRACK }
-  | "]"         as l { dbc "top" l lexbuf; R_BRACK }
-  | eof         as l { dbs "top" l lexbuf; EOF  }
+  | "stay"        as l { dbs "top" l lexbuf; STAY }
+  | "pre"         as l { dbs "top" l lexbuf; PRE  }
+  | "post"        as l { dbs "top" l lexbuf; POST }
+  | ":="          as l { dbs "top" l lexbuf; GETS }
+  | "all"         as l { dbs "top" l lexbuf; ALL  }
+  | "all-except"  as l { dbs "top" l lexbuf; ALL  }
+  | "initial"     as l { dbs "top" l lexbuf; INITIAL     }
+  | "final"       as l { dbs "top" l lexbuf; FINAL       }
+  | "-->"         as l { dbs "top" l lexbuf; ARROW_END   }
+  | "->"          as l { dbs "top" l lexbuf; ARROW_END   }
+  | "--"          as l { dbs "top" l lexbuf; ARROW_BEGIN }
+  | "["           as l { dbc "top" l lexbuf; L_BRACK }
+  | "]"           as l { dbc "top" l lexbuf; R_BRACK }
+  | eof           as l { dbs "top" l lexbuf; EOF  }
 
-  | id          as l { dbs "top" l lexbuf; IDENT l }
+  | id            as l { dbs "top" l lexbuf; IDENT l }
   | _                { raise SyntaxError }
 
+
+(* Rules for lexing keypresses, invoked when we see the keys keyword
+ * at the top-level
+ *)
 and read_keys u = parse
   | ws       {                      read_keys () lexbuf }
   | '[' as l { dbc "pkey" l lexbuf; read_keys' [] lexbuf }
@@ -85,6 +94,10 @@ and read_keys' acc = parse
   | "]"         as l { dbc "keyp" l lexbuf; KEYPRESSES (acc)           }
   | keypress    as l { dbs "keyp" l lexbuf; read_keys' (l :: acc) lexbuf   }
 
+
+(* Rules for lexing verbatin text, invoked when we see the text keyword
+ * at the top-level
+ *)
 and read_verbatim u = parse
   | ws       {                         read_verbatim () lexbuf }
   | '"' as l { dbc "pvrb" l lexbuf; read_verbatim' "" lexbuf }
@@ -99,6 +112,8 @@ and read_verbatim' acc = parse
   | _ as c as l { dbc "verb" l lexbuf;
                   read_verbatim' (acc ^ (String.make 1 c)) lexbuf
                 }
+
+(* Rules for lexing bash, invoked when we see a } at toplevel *)
 and read_bash acc = parse
   | '}'    as l { dbc "bash" l lexbuf; BASH_SCRIPT acc }
   | "\\\"" as l { dbs "bash" l lexbuf; read_bash (acc ^ "\"") lexbuf }
@@ -109,6 +124,9 @@ and read_bash acc = parse
                   read_bash (acc ^ (String.make 1 c)) lexbuf
                 }
 
+(* Rules for lexing file paths, invoked when we see the line keyword
+ * at the toplevel
+ *)
 and read_line u = parse
   | ws       {                         read_line () lexbuf }
   | '"' as l { dbc "plin" l lexbuf; read_line' "" lexbuf }
