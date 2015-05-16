@@ -55,6 +55,9 @@ rule lex = parse
   | ','           as l { dbc "top" l lexbuf;                 lex lexbuf }
   | ws                 {                                     lex lexbuf }
 
+(* The lexemes for actions are different than the lexemes for the top
+ * level of an FSA file. Therefore we call into some different lexer
+ * functions to return the lexemes associated with each action.*)
   | "keys"        as l { dbs "top" l lexbuf; read_keys     () lexbuf  }
   | "text"        as l { dbs "top" l lexbuf; read_verbatim () lexbuf  }
   | "line"        as l { dbs "top" l lexbuf; read_line () lexbuf      }
@@ -86,8 +89,7 @@ rule lex = parse
 
 
 (* Rules for lexing keypresses, invoked when we see the keys keyword
- * at the top-level
- *)
+ * at the top-level *)
 and read_keys u = parse
   | ws       {                      read_keys () lexbuf }
   | '[' as l { dbc "pkey" l lexbuf; read_keys' [] lexbuf }
@@ -103,8 +105,7 @@ and read_keys' acc = parse
 
 
 (* Rules for lexing verbatin text, invoked when we see the text keyword
- * at the top-level
- *)
+ * at the top-level *)
 and read_verbatim u = parse
   | ws       {                         read_verbatim () lexbuf }
   | '"' as l { dbc "pvrb" l lexbuf; read_verbatim' "" lexbuf }
@@ -132,8 +133,7 @@ and read_bash acc = parse
                 }
 
 (* Rules for lexing file paths, invoked when we see the line keyword
- * at the toplevel
- *)
+ * at the toplevel *)
 and read_line u = parse
   | ws       {                         read_line () lexbuf }
   | '"' as l { dbc "plin" l lexbuf; read_line' "" lexbuf }
@@ -149,8 +149,7 @@ and read_line' acc = parse
                 }
 
 (* Rules for lexing movement coordinates, invoked when we see the move
- * keyword at the top-level.
- *)
+ * keyword at the top-level. *)
 and read_move u = parse
   | ws       {                      read_move ()  lexbuf }
   | '(' as l { dbc "pmov" l lexbuf; read_move' [] lexbuf }
@@ -173,8 +172,7 @@ and read_move' acc = parse
 
 
 (* Rules for lexing relative movement coordinates, invoked when we see
- * the movr keyword at the top-level.
- *)
+ * the movr keyword at the top-level.  *)
 and read_move_rel u = parse
   | ws       {                      read_move_rel ()  lexbuf }
   | '(' as l { dbc "pmvr" l lexbuf; read_move_rel' [] lexbuf }
@@ -205,10 +203,8 @@ and read_move_rel' acc = parse
                       }
 
 
-
 (* Rules for lexing click instructions, invoked when we see the click
- * keyword at the top-level
- *)
+ * keyword at the top-level *)
 and read_click u = parse
   | ws       {                      read_click ()  lexbuf }
   | '(' as l { dbc "pclk" l lexbuf; read_click' None None lexbuf }
@@ -270,8 +266,7 @@ and read_click' side freq = parse
 
 
 (* Rules for lexing scroll instructions, invoked when we see the
- * scroll keyword at the top-level
- *)
+ * scroll keyword at the top-level *)
 and read_scroll u = parse
   | ws       {                      read_scroll ()  lexbuf }
   | '(' as l { dbc "pclk" l lexbuf; read_scroll' None None lexbuf }
