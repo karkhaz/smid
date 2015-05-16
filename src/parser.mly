@@ -4,7 +4,7 @@
  */
 
 %{
-  module L = List
+  open FileRep
 %}
 
 %token <string> IDENT
@@ -46,12 +46,7 @@
 %token R_BRACK
 
 %start input
-
 %type <FileRep.fsa> input
-
-%type <FileRep.fsa_entry> line
-%type <FileRep.initial_state list> initial_states_line
-%type <FileRep.final_state   list> final_states_line
 
 %%
 
@@ -62,11 +57,11 @@ lines: line                { [$1]     }
      | lines line { $2 :: $1 }
 
 
-line: initial_states_line   { FileRep.InitialStates  $1 }
-    | final_states_line     { FileRep.FinalStates    $1 }
-    | pre_state_hooks_line  { FileRep.PreStateHooks  $1 }
-    | post_state_hooks_line { FileRep.PostStateHooks $1 }
-    | transition_line       { FileRep.Transition     $1 }
+line: initial_states_line   { InitialStates  $1 }
+    | final_states_line     { FinalStates    $1 }
+    | pre_state_hooks_line  { PreStateHooks  $1 }
+    | post_state_hooks_line { PostStateHooks $1 }
+    | transition_line       { Transition     $1 }
 
 
 initial_states_line: INITIAL state_plus { $2 }
@@ -92,25 +87,25 @@ transition_line: additive_transition    { $1 }
 
 additive_transition:
   state_list ARROW_BEGIN action_list ARROW_END dest_state
-  { (FileRep.Additive $1, $3, $5) }
+  { (Additive $1, $3, $5) }
 
 subtractive_transition:
   ALL maybe_state_list ARROW_BEGIN action_list ARROW_END dest_state
-  { (FileRep.Subtractive $2, $4, $6) }
+  { (Subtractive $2, $4, $6) }
 
-dest_state: IDENT { FileRep.DestState $1 }
-          | STAY  { FileRep.Stay         }
+dest_state: IDENT { DestState $1 }
+          | STAY  { Stay         }
 
 action_list: action             {   [$1]   }
            | action_list action { $2 :: $1 }
 
-action: key_act       { FileRep.KeysAction $1     }
-      | type_act      { FileRep.TypeAction $1     }
-      | line_act      { FileRep.LineAction $1     }
-      | move_act      { FileRep.MoveAction $1     }
-      | move_rel_act  { FileRep.MoveRelAction $1  }
-      | click_act     { FileRep.ClickAction $1    }
-      | scroll_act    { FileRep.ScrollAction $1   }
+action: key_act       { KeysAction $1     }
+      | type_act      { TypeAction $1     }
+      | line_act      { LineAction $1     }
+      | move_act      { MoveAction $1     }
+      | move_rel_act  { MoveRelAction $1  }
+      | click_act     { ClickAction $1    }
+      | scroll_act    { ScrollAction $1   }
 
 
 key_act:      KEYPRESSES      { $1 }
