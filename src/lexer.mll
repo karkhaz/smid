@@ -46,33 +46,40 @@ let keypress = ([^ ' '  '\t' ']'] | '\\' ']')+
 let line = [^ '\n']*
 let nl = '\n'
 let id = ['a'-'z' '_' 'A'-'Z'] ['a'-'z' '_' 'A'-'Z' '0'-'9']+
+let integer = ['0'-'9']+
 
 (* Top-level lexing rules *)
 rule lex = parse
   | nl            as l { dbc "top" l lexbuf; incr_ln lexbuf; lex lexbuf }
   | '#' line nl   as l { dbs "top" l lexbuf; incr_ln lexbuf; lex lexbuf }
-  | ws                 {                                     lex lexbuf }
   | ','           as l { dbc "top" l lexbuf;                 lex lexbuf }
+  | ws                 {                                     lex lexbuf }
 
-  | "keys"        as l { dbs "top" l lexbuf; read_keys     () lexbuf }
-  | "text"        as l { dbs "top" l lexbuf; read_verbatim () lexbuf }
-  | "line"        as l { dbs "top" l lexbuf; read_line () lexbuf }
-  | "{"           as l { dbc "top" l lexbuf; read_bash "" lexbuf }
+  | "keys"        as l { dbs "top" l lexbuf; read_keys     () lexbuf  }
+  | "text"        as l { dbs "top" l lexbuf; read_verbatim () lexbuf  }
+  | "line"        as l { dbs "top" l lexbuf; read_line () lexbuf      }
+  | "move"        as l { dbs "top" l lexbuf; read_move () lexbuf      }
+  | "movr"        as l { dbs "top" l lexbuf; read_move_rel () lexbuf  }
+  | "move-rel"    as l { dbs "top" l lexbuf; read_move_rel () lexbuf  }
+  | "click"       as l { dbs "top" l lexbuf; read_click () lexbuf     }
+  | "clik"        as l { dbs "top" l lexbuf; read_click () lexbuf     }
+  | "scroll"      as l { dbs "top" l lexbuf; read_scroll () lexbuf    }
+  | "scrl"        as l { dbs "top" l lexbuf; read_scroll () lexbuf    }
+  | "{"           as l { dbc "top" l lexbuf; read_bash "" lexbuf      }
 
-  | "stay"        as l { dbs "top" l lexbuf; STAY }
-  | "pre"         as l { dbs "top" l lexbuf; PRE  }
-  | "post"        as l { dbs "top" l lexbuf; POST }
-  | ":="          as l { dbs "top" l lexbuf; GETS }
-  | "all"         as l { dbs "top" l lexbuf; ALL  }
-  | "all-except"  as l { dbs "top" l lexbuf; ALL  }
-  | "initial"     as l { dbs "top" l lexbuf; INITIAL     }
-  | "final"       as l { dbs "top" l lexbuf; FINAL       }
-  | "-->"         as l { dbs "top" l lexbuf; ARROW_END   }
-  | "->"          as l { dbs "top" l lexbuf; ARROW_END   }
-  | "--"          as l { dbs "top" l lexbuf; ARROW_BEGIN }
-  | "["           as l { dbc "top" l lexbuf; L_BRACK }
-  | "]"           as l { dbc "top" l lexbuf; R_BRACK }
-  | eof           as l { dbs "top" l lexbuf; EOF  }
+  | "stay"        as l { dbs "top" l lexbuf; STAY         }
+  | "pre"         as l { dbs "top" l lexbuf; PRE          }
+  | "post"        as l { dbs "top" l lexbuf; POST         }
+  | "all"         as l { dbs "top" l lexbuf; ALL          }
+  | "all-except"  as l { dbs "top" l lexbuf; ALL          }
+  | "initial"     as l { dbs "top" l lexbuf; INITIAL      }
+  | "final"       as l { dbs "top" l lexbuf; FINAL        }
+  | "-->"         as l { dbs "top" l lexbuf; ARROW_END    }
+  | "->"          as l { dbs "top" l lexbuf; ARROW_END    }
+  | "--"          as l { dbs "top" l lexbuf; ARROW_BEGIN  }
+  | "["           as l { dbc "top" l lexbuf; L_BRACK      }
+  | "]"           as l { dbc "top" l lexbuf; R_BRACK      }
+  | eof           as l { dbs "top" l lexbuf; EOF          }
 
   | id            as l { dbs "top" l lexbuf; IDENT l }
   | _                { raise SyntaxError }
@@ -140,3 +147,187 @@ and read_line' acc = parse
   | _ as c as l { dbc "line" l lexbuf;
                   read_line' (acc ^ (String.make 1 c)) lexbuf
                 }
+
+(* Rules for lexing movement coordinates, invoked when we see the move
+ * keyword at the top-level.
+ *)
+and read_move u = parse
+  | ws       {                      read_move ()  lexbuf }
+  | '(' as l { dbc "pmov" l lexbuf; read_move' [] lexbuf }
+  | nl  as l { dbc "pmov" l lexbuf; incr_ln lexbuf; read_move () lexbuf }
+  | _        { raise SyntaxError }
+and read_move' acc = parse
+  | ws               {                      read_move' acc lexbuf          }
+  | ','              {                      read_move' acc lexbuf          }
+  | nl          as l { dbc "move" l lexbuf; incr_ln lexbuf; read_move' acc lexbuf }
+  | '#' line nl as l { dbs "move" l lexbuf; incr_ln lexbuf; read_move' acc lexbuf }
+  | integer     as l { dbs "move" l lexbuf; read_keys' (l :: acc) lexbuf   }
+  | ")"         as l { dbc "move" l lexbuf;
+                       match acc with
+                        | [x;y] ->
+                            MOVE (int_of_string x, int_of_string y)
+                        | _ -> raise SyntaxError
+                     }
+  | _        { raise SyntaxError }
+
+
+
+(* Rules for lexing relative movement coordinates, invoked when we see
+ * the movr keyword at the top-level.
+ *)
+and read_move_rel u = parse
+  | ws       {                      read_move_rel ()  lexbuf }
+  | '(' as l { dbc "pmvr" l lexbuf; read_move_rel' [] lexbuf }
+  | nl  as l { dbc "pmvr" l lexbuf; incr_ln lexbuf; read_move_rel () lexbuf }
+  | _        { raise SyntaxError }
+and read_move_rel' acc = parse
+  | ws                { read_move_rel' acc lexbuf }
+  | ','               { read_move_rel' acc lexbuf }
+  | nl          as l  { dbc "movr" l lexbuf;
+                        incr_ln lexbuf;
+                        read_move_rel' acc lexbuf
+                      }
+  | '#' line nl as l  { dbs "movr" l lexbuf;
+                        incr_ln lexbuf;
+                        read_move_rel' acc lexbuf
+                      }
+  | integer     as l  { dbs "movr" l lexbuf;
+                        read_keys' (l :: acc) lexbuf
+                      }
+  | '-' integer as l  { dbs "movr" l lexbuf;
+                        read_keys' (l :: acc) lexbuf
+                      }
+  | ")"         as l  { dbc "movr" l lexbuf;
+                        match acc with
+                         | [x;y] ->
+                             MOVE_REL (int_of_string x, int_of_string y)
+                         | _ -> raise SyntaxError
+                      }
+
+
+
+(* Rules for lexing click instructions, invoked when we see the click
+ * keyword at the top-level
+ *)
+and read_click u = parse
+  | ws       {                      read_click ()  lexbuf }
+  | '(' as l { dbc "pclk" l lexbuf; read_click' None None lexbuf }
+  | nl  as l { dbc "pclk" l lexbuf; incr_ln lexbuf; read_click () lexbuf }
+  | _        { raise SyntaxError }
+and read_click' side freq = parse
+  | ws                { read_click' side freq lexbuf }
+  | ','               { read_click' side freq lexbuf }
+  | nl          as l  { dbc "clik" l lexbuf;
+                        incr_ln lexbuf;
+                        read_click' side freq lexbuf
+                      }
+  | '#' line nl as l  { dbs "clik" l lexbuf;
+                        incr_ln lexbuf;
+                        read_click' side freq lexbuf
+                      }
+  | integer     as l  { dbs "clik" l lexbuf;
+                        match freq with
+                          | None ->
+                              read_click' side (Some l) lexbuf
+                          | Some _ ->
+                              raise SyntaxError
+                      }
+  | "left"      as l  { dbs "clik" l lexbuf;
+                        match side with
+                          | None ->
+                              read_click' (Some FileRep.Left) freq lexbuf
+                          | Some _ ->
+                              raise SyntaxError
+                      }
+  | "L"         as l  { dbc "clik" l lexbuf;
+                        match side with
+                          | None ->
+                              read_click' (Some FileRep.Left) freq lexbuf
+                          | Some _ ->
+                              raise SyntaxError
+                      }
+  | "right"     as l  { dbs "clik" l lexbuf;
+                        match side with
+                          | None ->
+                              read_click' (Some FileRep.Right) freq lexbuf
+                          | Some _ ->
+                              raise SyntaxError
+                      }
+  | "R"         as l  { dbc "clik" l lexbuf;
+                        match side with
+                          | None ->
+                              read_click' (Some FileRep.Right) freq lexbuf
+                          | Some _ ->
+                              raise SyntaxError
+                      }
+  | ")"         as l  { dbc "clik" l lexbuf;
+                        match side, freq with
+                          | None, _   | _, None ->
+                              raise SyntaxError
+                          | Some side, Some freq ->
+                              CLICK (side, int_of_string freq)
+                      }
+
+
+(* Rules for lexing scroll instructions, invoked when we see the
+ * scroll keyword at the top-level
+ *)
+and read_scroll u = parse
+  | ws       {                      read_scroll ()  lexbuf }
+  | '(' as l { dbc "pclk" l lexbuf; read_scroll' None None lexbuf }
+  | nl  as l { dbc "pclk" l lexbuf; incr_ln lexbuf; read_scroll () lexbuf }
+  | _        { raise SyntaxError }
+and read_scroll' dir freq = parse
+  | ws                { read_scroll' dir freq lexbuf }
+  | ','               { read_scroll' dir freq lexbuf }
+  | nl          as l  { dbc "clik" l lexbuf;
+                        incr_ln lexbuf;
+                        read_scroll' dir freq lexbuf
+                      }
+  | '#' line nl as l  { dbs "clik" l lexbuf;
+                        incr_ln lexbuf;
+                        read_scroll' dir freq lexbuf
+                      }
+  | integer     as l  { dbs "clik" l lexbuf;
+                        match freq with
+                          | None ->
+                              read_scroll' dir (Some l) lexbuf
+                          | Some _ ->
+                              raise SyntaxError
+                      }
+  | "up"        as l  { dbs "clik" l lexbuf;
+                        match dir with
+                          | None ->
+                              read_scroll' (Some FileRep.Up) freq lexbuf
+                          | Some _ ->
+                              raise SyntaxError
+                      }
+  | "U"         as l  { dbc "clik" l lexbuf;
+                        match dir with
+                          | None ->
+                              read_scroll' (Some FileRep.Up) freq lexbuf
+                          | Some _ ->
+                              raise SyntaxError
+                      }
+  | "down"      as l  { dbs "clik" l lexbuf;
+                        match dir with
+                          | None ->
+                              read_scroll' (Some FileRep.Down) freq lexbuf
+                          | Some _ ->
+                              raise SyntaxError
+                      }
+  | "D"         as l  { dbc "clik" l lexbuf;
+                        match dir with
+                          | None ->
+                              read_scroll' (Some FileRep.Down) freq lexbuf
+                          | Some _ ->
+                              raise SyntaxError
+                      }
+  | ")"         as l  { dbc "clik" l lexbuf;
+                        match dir, freq with
+                          | None, _   | _, None ->
+                              raise SyntaxError
+                          | Some dir, Some freq ->
+                              SCROLL (dir, int_of_string freq)
+                      }
+
