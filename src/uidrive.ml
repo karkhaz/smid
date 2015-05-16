@@ -102,6 +102,7 @@ let get_fsa fsa_file =
 
 let () =
   parse (speclist ()) anon_fun usage_msg;
+  Random.self_init ();
   match !fsa_file, !mode with
     | None, _
     | _, None -> usage (speclist ()) usage_msg; exit 1

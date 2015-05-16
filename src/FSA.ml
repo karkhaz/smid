@@ -27,8 +27,8 @@ type scroll_direction = Up | Down
 
 type action = KeysAction of string list
             | TypeAction of type_action
-            | MoveAction of (int * int)
-            | MoveRelAction of (int * int)
+            | MoveAction of (int * int * int * int)
+            | MoveRelAction of (int * int * int * int)
             | ClickAction of (click_side * int)
             | ScrollAction of (scroll_direction * int)
 
@@ -97,13 +97,13 @@ let normalise frep =
         | [] -> acc
         | act :: t -> (
           match act with
-            | FR.MoveAction (x, y) ->
+            | FR.MoveAction (sx, sy, ex, ey) ->
                 let new_acc = L.map (fun l ->
-                  MoveAction (x, y) :: l) acc
+                  MoveAction (sx, sy, ex, ey) :: l) acc
                 in conv_actions t new_acc
-            | FR.MoveRelAction (x, y) ->
+            | FR.MoveRelAction (sx, sy, ex, ey) ->
                 let new_acc = L.map (fun l ->
-                  MoveRelAction (x, y) :: l) acc
+                  MoveRelAction (sx, sy, ex, ey) :: l) acc
                 in conv_actions t new_acc
             | FR.ClickAction (s, n) ->
                 let new_side = (
@@ -201,6 +201,11 @@ let stats_of {states; inits; finals; transs; hooks} =
 let dot_of fsa =
   let dot_escape str =
     str |> S.escaped
+  in let string_of_coords sx sy ex ey =
+    if ((ex = sx + 1) && (ey = sy + 1))
+    then "(" ^ string_of_int sx ^ ", " ^ string_of_int sy ^ ")"
+    else "(" ^ string_of_int sx ^ ", " ^ string_of_int sy ^ " - "
+             ^ string_of_int ex ^ ", " ^ string_of_int ey ^ ")"
   in let dot_of_is inits =
     let dot_of_i init =
       init ^ " [style=filled, color=green];"
@@ -217,12 +222,10 @@ let dot_of fsa =
               | Up -> "ScrUp "
               | Down -> "ScrDown "
             in dir ^ "x" ^ (string_of_int n)
-        | MoveAction (x, y) ->
-            "move (" ^ string_of_int x ^
-            ", " ^ string_of_int y ^ ")"
-        | MoveRelAction (x, y) ->
-            "rel-move (" ^ string_of_int x ^
-            ", " ^ string_of_int y ^ ")"
+        | MoveAction (sx, sy, ex, ey) ->
+            "move " ^ string_of_coords sx sy ex ey
+        | MoveRelAction (sx, sy, ex, ey) ->
+            "rel-move " ^ string_of_coords sx sy ex ey
         | ClickAction (side, freq) ->
             let side =
               match side with
@@ -329,13 +332,21 @@ let script_of fsa run_length =
       in let cmd = "xdotool search --name $WINDOW_NAME type --window \
                     %1 \"" ^ text ^ "\""
       in comment ^ cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
-    in let script_of_move x y =
-      let cmd = "xdotool search --name $WINDOW_NAME "
+    in let coords_of_region sx sy ex ey =
+      let x_range = ex - sx
+      in let x = Random.int x_range
+      in let y_range = ey - sy
+      in let y = Random.int y_range
+      in (x, y)
+    in let script_of_move sx sy ex ey =
+      let (x, y) = coords_of_region sx sy ex ey
+      in let cmd = "xdotool search --name $WINDOW_NAME "
         ^ "mousemove --window %1 --clearmodifiers --sync "
         ^ (string_of_int x) ^ " " ^ (string_of_int y)
         in cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
-    in let script_of_move_rel x y =
-      let cmd = "xdotool "
+    in let script_of_move_rel sx sy ex ey =
+      let (x, y) = coords_of_region sx sy ex ey
+      in let cmd = "xdotool "
         ^ "mousemove_relative --clearmodifiers --sync "
         ^ (string_of_int x) ^ " " ^ (string_of_int y)
         in cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
@@ -358,8 +369,10 @@ let script_of fsa run_length =
     in let act_to_s  = function
       | KeysAction keys -> script_of_keys keys
       | TypeAction str  -> script_of_type str
-      | MoveAction (x, y)  -> script_of_move x y
-      | MoveRelAction (x, y)  -> script_of_move_rel x y
+      | MoveAction (sx, sy, ex, ey) ->
+          script_of_move sx sy ex ey
+      | MoveRelAction (sx, sy, ex, ey) ->
+          script_of_move_rel sx sy ex ey
       | ClickAction (side, freq)  -> script_of_click side freq
       | ScrollAction (dir, freq)  -> script_of_scroll dir freq
     in L.fold_left (fun acc act ->

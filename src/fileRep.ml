@@ -19,8 +19,8 @@ type scroll_direction = Up | Down
 type action = KeysAction of string list
             | TypeAction of string
             | LineAction of string
-            | MoveAction of (int * int)
-            | MoveRelAction of (int * int)
+            | MoveAction of (int * int * int * int)
+            | MoveRelAction of (int * int * int * int)
             | ClickAction of (click_side * int)
             | ScrollAction of (scroll_direction * int)
 

@@ -14,8 +14,8 @@
 %token <string> LINE
 %token <string> BLOCK
 
-%token <int * int > MOVE
-%token <int * int>  MOVE_REL
+%token <int * int * int * int> MOVE
+%token <int * int * int * int> MOVE_REL
 
 %token <FileRep.click_side * int> CLICK
 %token <FileRep.scroll_direction * int> SCROLL
