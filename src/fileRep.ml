@@ -13,10 +13,16 @@ type hook = string
 
 type state_hooks = (final_state * hook)
 
+type click_side = Left | Right
+type scroll_direction = Up | Down
 
 type action = KeysAction of string list
             | TypeAction of string
             | LineAction of string
+            | MoveAction of (int * int)
+            | MoveRelAction of (int * int)
+            | ClickAction of (click_side * int)
+            | ScrollAction of (scroll_direction * int)
 
 type dest_state = DestState of string
                 | Stay

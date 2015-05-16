@@ -22,8 +22,15 @@ type type_action = {
   text:  string;
 }
 
+type click_side = Left | Right
+type scroll_direction = Up | Down
+
 type action = KeysAction of string list
             | TypeAction of type_action
+            | MoveAction of (int * int)
+            | MoveRelAction of (int * int)
+            | ClickAction of (click_side * int)
+            | ScrollAction of (scroll_direction * int)
 
 type trans = (state * action list * state)
 
@@ -90,6 +97,30 @@ let normalise frep =
         | [] -> acc
         | act :: t -> (
           match act with
+            | FR.MoveAction (x, y) ->
+                let new_acc = L.map (fun l ->
+                  MoveAction (x, y) :: l) acc
+                in conv_actions t new_acc
+            | FR.MoveRelAction (x, y) ->
+                let new_acc = L.map (fun l ->
+                  MoveRelAction (x, y) :: l) acc
+                in conv_actions t new_acc
+            | FR.ClickAction (s, n) ->
+                let new_side = (
+                  match s with
+                    | FR.Left -> Left
+                    | FR.Right -> Right
+                ) in let new_acc = L.map (fun l ->
+                  ClickAction (new_side, n) :: l) acc
+                in conv_actions t new_acc
+            | FR.ScrollAction (d, n) ->
+                let new_direction = (
+                  match d with
+                    | FR.Up -> Up
+                    | FR.Down -> Down
+                ) in let new_acc = L.map (fun l ->
+                  ScrollAction (new_direction, n) :: l) acc
+                in conv_actions t new_acc
             | FR.KeysAction a ->
                 let new_acc = L.map (fun l ->
                   KeysAction a :: l) acc
@@ -181,6 +212,29 @@ let dot_of fsa =
   in let dot_of_ts transs =
     let dot_of_t (src, acts, dst) =
       let dot_of_act = function
+        | ScrollAction (d, n) ->
+            let dir = match d with
+              | Up -> "ScrUp "
+              | Down -> "ScrDown "
+            in dir ^ "x" ^ (string_of_int n)
+        | MoveAction (x, y) ->
+            "move (" ^ string_of_int x ^
+            ", " ^ string_of_int y ^ ")"
+        | MoveRelAction (x, y) ->
+            "rel-move (" ^ string_of_int x ^
+            ", " ^ string_of_int y ^ ")"
+        | ClickAction (side, freq) ->
+            let side =
+              match side with
+                | Left -> "left"
+                | Right -> "right"
+            in let freq =
+              match freq with
+                | 1 -> "single"
+                | 2 -> "double"
+                | 3 -> "triple"
+                | n -> (string_of_int n) ^ "x"
+            in side ^ " " ^ freq ^ " click"
         | KeysAction a ->
           let keys = L.fold_left (fun acc key ->
               (dot_escape key) ^ " " ^ acc
@@ -275,9 +329,39 @@ let script_of fsa run_length =
       in let cmd = "xdotool search --name $WINDOW_NAME type --window \
                     %1 \"" ^ text ^ "\""
       in comment ^ cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
+    in let script_of_move x y =
+      let cmd = "xdotool search --name $WINDOW_NAME "
+        ^ "mousemove --window %1 --clearmodifiers --sync "
+        ^ (string_of_int x) ^ " " ^ (string_of_int y)
+        in cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
+    in let script_of_move_rel x y =
+      let cmd = "xdotool "
+        ^ "mousemove_relative --clearmodifiers --sync "
+        ^ (string_of_int x) ^ " " ^ (string_of_int y)
+        in cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
+    in let script_of_click side freq=
+      let button = match side with
+        | Left ->  "1"
+        | Right -> "3"
+      in let cmd = "xdotool click --clearmodifiers "
+        ^ " --repeat " ^ (string_of_int freq)
+        ^ " " ^ button
+        in cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
+    in let script_of_scroll dir freq=
+      let button = match dir with
+        | Up ->  "4"
+        | Down -> "5"
+      in let cmd = "xdotool click --clearmodifiers "
+        ^ " --repeat " ^ (string_of_int freq)
+        ^ " " ^ button
+        in cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
     in let act_to_s  = function
       | KeysAction keys -> script_of_keys keys
       | TypeAction str  -> script_of_type str
+      | MoveAction (x, y)  -> script_of_move x y
+      | MoveRelAction (x, y)  -> script_of_move_rel x y
+      | ClickAction (side, freq)  -> script_of_click side freq
+      | ScrollAction (dir, freq)  -> script_of_scroll dir freq
     in L.fold_left (fun acc act ->
       (act_to_s act) ^ "\n" ^ acc
     ) "" acts
