@@ -25,10 +25,12 @@ type type_action = {
 type click_side = Left | Right
 type scroll_direction = Up | Down
 
+type location = (string option * int * int * int * int)
+
 type action = KeysAction of string list
             | TypeAction of type_action
-            | MoveAction of (int * int * int * int)
-            | MoveRelAction of (int * int * int * int)
+            | MoveAction of location
+            | MoveRelAction of location
             | ClickAction of (click_side * int)
             | ScrollAction of (scroll_direction * int)
 
@@ -45,7 +47,19 @@ type fsa = {
 
 (* Turn a FileRep.fsa into an fsa *)
 let normalise frep =
-  let states_from_frep get_states_fun =
+  let coords_from_alias alias =
+    let result = L.fold_left (fun acc e ->
+      match e with
+        | FR.LocationAlias (a, coords) ->
+            if a = alias
+            then Some coords
+            else acc
+        | _ -> acc
+    ) None frep
+    in match result with
+      | Some coords -> coords
+      | None -> failwith ("Unknown region '" ^ alias ^ "'")
+  in let states_from_frep get_states_fun =
     let all_states = L.fold_left (fun acc entry ->
       acc @ (get_states_fun entry)
     ) [] frep
@@ -64,6 +78,7 @@ let normalise frep =
       )
       | FR.PreStateHooks (s, _) -> [s]
       | FR.PostStateHooks (s, _) -> [s]
+      | FR.LocationAlias _ -> []
     in {fsa with states = states_from_frep get_states}
   in let get_inits frep fsa =
     let get_states = function
@@ -97,13 +112,25 @@ let normalise frep =
         | [] -> acc
         | act :: t -> (
           match act with
-            | FR.MoveAction (sx, sy, ex, ey) ->
-                let new_acc = L.map (fun l ->
-                  MoveAction (sx, sy, ex, ey) :: l) acc
+            | FR.MoveAction loc ->
+                let coords = match loc with
+                  | FR.Coordinates (sx, sy, ex, ey) ->
+                      (None, sx, sy, ex, ey)
+                  | FR.Alias s ->
+                      let sx, sy, ex, ey = coords_from_alias s
+                      in (Some s, sx, sy, ex, ey)
+                in let new_acc = L.map (fun l ->
+                  MoveAction coords :: l) acc
                 in conv_actions t new_acc
-            | FR.MoveRelAction (sx, sy, ex, ey) ->
-                let new_acc = L.map (fun l ->
-                  MoveRelAction (sx, sy, ex, ey) :: l) acc
+            | FR.MoveRelAction loc ->
+                let coords = match loc with
+                  | FR.Coordinates (sx, sy, ex, ey) ->
+                      (None, sx, sy, ex, ey)
+                  | FR.Alias s ->
+                      let sx, sy, ex, ey = coords_from_alias s
+                      in (Some s, sx, sy, ex, ey)
+                in let new_acc = L.map (fun l ->
+                  MoveRelAction coords :: l) acc
                 in conv_actions t new_acc
             | FR.ClickAction (s, n) ->
                 let new_side = (
@@ -222,9 +249,9 @@ let dot_of fsa =
               | Up -> "ScrUp "
               | Down -> "ScrDown "
             in dir ^ "x" ^ (string_of_int n)
-        | MoveAction (sx, sy, ex, ey) ->
+        | MoveAction (_, sx, sy, ex, ey) ->
             "move " ^ string_of_coords sx sy ex ey
-        | MoveRelAction (sx, sy, ex, ey) ->
+        | MoveRelAction (_, sx, sy, ex, ey) ->
             "rel-move " ^ string_of_coords sx sy ex ey
         | ClickAction (side, freq) ->
             let side =
@@ -369,9 +396,9 @@ let script_of fsa run_length =
     in let act_to_s  = function
       | KeysAction keys -> script_of_keys keys
       | TypeAction str  -> script_of_type str
-      | MoveAction (sx, sy, ex, ey) ->
+      | MoveAction (_, sx, sy, ex, ey) ->
           script_of_move sx sy ex ey
-      | MoveRelAction (sx, sy, ex, ey) ->
+      | MoveRelAction (_, sx, sy, ex, ey) ->
           script_of_move_rel sx sy ex ey
       | ClickAction (side, freq)  -> script_of_click side freq
       | ScrollAction (dir, freq)  -> script_of_scroll dir freq

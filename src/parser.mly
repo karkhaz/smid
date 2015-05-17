@@ -16,6 +16,7 @@
 
 %token <int * int * int * int> MOVE
 %token <int * int * int * int> MOVE_REL
+%token <string> MOVE_REGION
 
 %token <FileRep.click_side * int> CLICK
 %token <FileRep.scroll_direction * int> SCROLL
@@ -103,6 +104,7 @@ action: key_act       { KeysAction $1     }
       | type_act      { TypeAction $1     }
       | line_act      { LineAction $1     }
       | move_act      { MoveAction $1     }
+      | move_coord    { MoveAction $1     }
       | move_rel_act  { MoveRelAction $1  }
       | click_act     { ClickAction $1    }
       | scroll_act    { ScrollAction $1   }
@@ -111,10 +113,11 @@ action: key_act       { KeysAction $1     }
 key_act:      KEYPRESSES      { $1 }
 type_act:     VERBATIM_STRING { $1 }
 line_act:     LINE            { $1 }
-move_act:     MOVE            { $1 }
-move_rel_act: MOVE_REL        { $1 }
 click_act:    CLICK           { $1 }
 scroll_act:   SCROLL          { $1 }
+move_act:     MOVE            { FileRep.Coordinates $1 }
+move_rel_act: MOVE_REL        { FileRep.Coordinates $1 }
+move_coord:   MOVE_REGION     { FileRep.Alias $1       }
 
 
 state_string: IDENT { $1 }

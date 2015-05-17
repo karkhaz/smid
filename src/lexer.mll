@@ -154,7 +154,7 @@ and read_move u = parse
   | ws       {                      read_move ()  lexbuf }
   | '(' as l { dbc "pmov" l lexbuf; read_move' [] lexbuf }
   | nl  as l { dbc "pmov" l lexbuf; incr_ln lexbuf; read_move () lexbuf }
-  | _        { raise SyntaxError }
+  | id  as l { dbs "pmov" l lexbuf; MOVE_REGION l        }
 and read_move' acc = parse
   | ws               {                      read_move' acc lexbuf          }
   | ','              {                      read_move' acc lexbuf          }
@@ -221,6 +221,7 @@ and read_move_rel' acc = parse
                                       )
                          | _ -> raise SyntaxError
                       }
+  | _        { raise SyntaxError }
 
 
 (* Rules for lexing click instructions, invoked when we see the click
@@ -283,6 +284,7 @@ and read_click' side freq = parse
                           | Some side, Some freq ->
                               CLICK (side, int_of_string freq)
                       }
+  | _        { raise SyntaxError }
 
 
 (* Rules for lexing scroll instructions, invoked when we see the
@@ -345,4 +347,5 @@ and read_scroll' dir freq = parse
                           | Some dir, Some freq ->
                               SCROLL (dir, int_of_string freq)
                       }
+  | _        { raise SyntaxError }
 

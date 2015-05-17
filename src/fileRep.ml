@@ -16,11 +16,15 @@ type state_hooks = (final_state * hook)
 type click_side = Left | Right
 type scroll_direction = Up | Down
 
+type coordinates = (int * int * int * int)
+type location = Coordinates of coordinates
+              | Alias of string
+
 type action = KeysAction of string list
             | TypeAction of string
             | LineAction of string
-            | MoveAction of (int * int * int * int)
-            | MoveRelAction of (int * int * int * int)
+            | MoveAction of location
+            | MoveRelAction of location
             | ClickAction of (click_side * int)
             | ScrollAction of (scroll_direction * int)
 
@@ -39,6 +43,7 @@ type fsa_entry  = InitialStates  of initial_state list
                 | PreStateHooks  of state_hooks
                 | PostStateHooks of state_hooks
                 | Transition     of trans
+                | LocationAlias  of (string * coordinates)
 
 type fsa = fsa_entry list
 
