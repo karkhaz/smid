@@ -82,6 +82,14 @@ rule lex = parse
   | "--"          as l { dbs "top" l lexbuf; ARROW_BEGIN  }
   | "["           as l { dbc "top" l lexbuf; L_BRACK      }
   | "]"           as l { dbc "top" l lexbuf; R_BRACK      }
+
+  | "region"      as l { dbs "top" l lexbuf; REGION       }
+  | "="           as l { dbc "top" l lexbuf; EQUALS       }
+  | ","           as l { dbc "top" l lexbuf; COMMA        }
+  | "("           as l { dbc "top" l lexbuf; L_PAREN      }
+  | ")"           as l { dbc "top" l lexbuf; R_PAREN      }
+  | integer       as l { dbs "top" l lexbuf; INT (int_of_string l) }
+
   | eof           as l { dbs "top" l lexbuf; EOF          }
 
   | id            as l { dbs "top" l lexbuf; IDENT l }

@@ -23,6 +23,11 @@
 
 %token <string> BASH_SCRIPT
 
+%token REGION
+%token <int> INT
+%token EQUALS
+%token COMMA
+
 %token ARROW_BEGIN
 %token ARROW_END
 
@@ -41,10 +46,10 @@
 %token DQUOTE
 %token ESCAPED_DQUOTE
 
-%token L_CURLY
-%token R_CURLY
 %token L_BRACK
 %token R_BRACK
+%token L_PAREN
+%token R_PAREN
 
 %start input
 %type <FileRep.fsa> input
@@ -63,6 +68,19 @@ line: initial_states_line   { InitialStates  $1 }
     | pre_state_hooks_line  { PreStateHooks  $1 }
     | post_state_hooks_line { PostStateHooks $1 }
     | transition_line       { Transition     $1 }
+    | region_def_line       { LocationAlias  $1 }
+
+
+region_def_line: REGION IDENT EQUALS L_PAREN coords R_PAREN
+                 { ($2, ($5)) }
+
+coords: INT maybe_comma INT
+        { ($1, $3, $1, $3) }
+      | INT maybe_comma INT maybe_comma INT maybe_comma INT
+         { ($1, $3, $5, $7) }
+
+maybe_comma:       { }
+           | COMMA { }
 
 
 initial_states_line: INITIAL state_plus { $2 }
