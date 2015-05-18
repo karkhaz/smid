@@ -30,5 +30,5 @@ let random_from_list lst =
       )
       | [] -> assert false
   in let length = L.length lst
-  in let index = Random.self_init (); Random.int length
+  in let index = Random.int length
   in get_element lst index

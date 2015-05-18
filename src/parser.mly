@@ -23,6 +23,11 @@
 
 %token <string> BASH_SCRIPT
 
+%token PROB
+%token HIGH
+%token MED
+%token LOW
+
 %token REGION
 %token <int> INT
 %token EQUALS
@@ -126,6 +131,7 @@ action: key_act       { KeysAction $1     }
       | move_rel_act  { MoveRelAction $1  }
       | click_act     { ClickAction $1    }
       | scroll_act    { ScrollAction $1   }
+      | probability   { Probability  $1   }
 
 
 key_act:      KEYPRESSES      { $1 }
@@ -133,9 +139,14 @@ type_act:     VERBATIM_STRING { $1 }
 line_act:     LINE            { $1 }
 click_act:    CLICK           { $1 }
 scroll_act:   SCROLL          { $1 }
-move_act:     MOVE            { FileRep.Coordinates $1 }
-move_rel_act: MOVE_REL        { FileRep.Coordinates $1 }
-move_coord:   MOVE_REGION     { FileRep.Alias $1       }
+move_act:     MOVE            { Coordinates $1  }
+move_rel_act: MOVE_REL        { Coordinates $1  }
+move_coord:   MOVE_REGION     { Alias $1        }
+
+probability:  PROB prob { $2  }
+        prob: HIGH      { High}
+            | MED       { Med }
+            | LOW       { Low }
 
 
 state_string: IDENT { $1 }

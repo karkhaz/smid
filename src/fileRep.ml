@@ -16,6 +16,8 @@ type state_hooks = (final_state * hook)
 type click_side = Left | Right
 type scroll_direction = Up | Down
 
+type probability = High | Med | Low
+
 type coordinates = (int * int * int * int)
 type location = Coordinates of coordinates
               | Alias of string
@@ -27,6 +29,7 @@ type action = KeysAction of string list
             | MoveRelAction of location
             | ClickAction of (click_side * int)
             | ScrollAction of (scroll_direction * int)
+            | Probability of probability
 
 type dest_state = DestState of string
                 | Stay

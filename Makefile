@@ -8,7 +8,7 @@ FSA_DIAGRAMS=$(patsubst examples/%.fsa,out/%.png,$(FSA_FILES))
 BIN=uidrive.native
 
 LIBS=unix,str
-FLAGS=-warn-error,+A
+FLAGS=-warn-error,+A,-safe-string,-g
 
 SRC=$(wildcard src/*.ml) $(wildcard src/*.mll) \
 		$(wildcard src/*.mly)

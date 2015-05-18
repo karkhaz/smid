@@ -34,10 +34,13 @@ type action = KeysAction of string list
             | ClickAction of (click_side * int)
             | ScrollAction of (scroll_direction * int)
 
+type probability = High | Med | Low
+
 type trans = {
-  src:    state;
+  src:   state;
   acts:  action list;
-  dst:   state
+  dst:   state;
+  prob:  probability;
 }
 
 type fsa = {
@@ -116,6 +119,7 @@ let normalise frep =
         | [] -> acc
         | act :: t -> (
           match act with
+            | FR.Probability _ -> conv_actions t acc
             | FR.MoveAction loc ->
                 let coords = match loc with
                   | FR.Coordinates (sx, sy, ex, ey) ->
@@ -176,6 +180,17 @@ let normalise frep =
         )
       in let act_lists = conv_actions acts [[]]
       in L.map (L.rev) act_lists
+    in let probability_of actions =
+      L.fold_left (fun acc e ->
+        match e with
+          | FR.Probability p -> (
+              match p with
+                | FR.High -> High
+                | FR.Med  -> Med
+                | FR.Low  -> Low
+          )
+          | _ -> acc
+      ) Med actions
     in let transs_of_entry = function
       | FR.Transition (srcs, acts, dst) ->
           let states = match srcs with
@@ -188,11 +203,12 @@ let normalise frep =
                 ) all_states
           in let lst = L.map (fun state ->
             let conv_acts = conv_actions acts
+            in let prob = probability_of acts
             in L.map (fun acts ->
               let dst = match dst with
                 | FR.DestState s -> s
                 | FR.Stay -> state
-              in {src=state; acts; dst}
+              in {src=state; acts; dst; prob}
             ) conv_acts
           ) states
           in L.flatten lst
@@ -308,8 +324,30 @@ let dot_of fsa =
 
 
 let script_of fsa run_length =
+  (* get_nexts gets the transitions that could be taken away from
+   * source. It doesn't get all of the transitions, since some
+   * transitions might be labelled with probabilities (High, Med or
+   * Low). This function returns a list of transitions from a single
+   * probability category; a list of transitions is more likely to be
+   * returned if its probability category is High than Med, etc.
+   *)
   let get_nexts source =
     L.filter (fun {src; _} -> src = source) fsa.transs
+  in let filter_by_probability outs =
+    let highs = L.filter (fun {prob; _} -> prob = High) outs
+    in let meds = L.filter  (fun {prob; _} -> prob = Med)  outs
+    in let lows = L.filter  (fun {prob; _} -> prob = Low)  outs
+    in let lst = [lows;meds;highs]
+    in let lst = L.filter (fun l -> L.length l > 0) lst
+    in let (h, t) = match lst with
+      | h :: t -> (h, t)
+      | [] -> failwith ("Stuck.")
+    in L.fold_left (fun acc e ->
+      let rand = Random.int 20
+      in if rand = 0
+      then acc
+      else e
+    ) h t
   in let random_delay =
     "r=$RANDOM; let \"r %=10\"; let \"r += 2\"; "
     ^ "sleep `bc -l <<< \"1 / $r\"`"
@@ -454,11 +492,13 @@ let script_of fsa run_length =
           in  if  L.exists is_final nexts
               then let {src; acts; dst} = L.find is_final nexts
                    in (dst, (add_trans (L.find is_final nexts) acc))
-              else let {src; _} as next = U.random_from_list nexts
+              else let nexts = filter_by_probability nexts
+                   in let {src; _} as next = U.random_from_list nexts
                    in script_of fsa 0 src (add_trans next acc)
       | n ->
           let nexts = get_nexts curr
           in let nexts = L.filter (fun s -> not (is_final s)) nexts
+          in let nexts = filter_by_probability nexts
           in let {src; acts; dst} as next = U.random_from_list nexts
           in script_of fsa (n - 1) dst (add_trans next acc)
   in let start_state = U.random_from_list fsa.inits

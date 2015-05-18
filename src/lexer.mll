@@ -70,6 +70,11 @@ rule lex = parse
   | "scrl"        as l { dbs "top" l lexbuf; read_scroll () lexbuf    }
   | "{"           as l { dbc "top" l lexbuf; read_bash "" lexbuf      }
 
+  | "prob"        as l { dbs "top" l lexbuf; PROB }
+  | "high"        as l { dbs "top" l lexbuf; HIGH }
+  | "med"         as l { dbs "top" l lexbuf; MED  }
+  | "low"         as l { dbs "top" l lexbuf; LOW  }
+
   | "stay"        as l { dbs "top" l lexbuf; STAY         }
   | "pre"         as l { dbs "top" l lexbuf; PRE          }
   | "post"        as l { dbs "top" l lexbuf; POST         }
