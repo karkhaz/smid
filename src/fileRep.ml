@@ -62,6 +62,7 @@ let pp_fsa fsa =
   in let pp_fs line = "final:   " ^ pp_str_list line
   in let pp_sh (state, hooks) =
     "Hooks for " ^ state ^ ": " ^ pp_hooks hooks
+  in let pp_la la = "region"
   in L.fold_left (fun acc line ->
     let str = match line with
       | InitialStates l    -> (pp_is l) ^ "\n"
@@ -69,6 +70,7 @@ let pp_fsa fsa =
       | PreStateHooks l    -> (pp_sh l) ^ "\n"
       | PostStateHooks l   -> (pp_sh l) ^ "\n"
       | Transition l       -> (pp_tr l) ^ "\n"
+      | LocationAlias l    -> (pp_la l) ^ "\n"
     in str ^ acc
     ) "" fsa
 

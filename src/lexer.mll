@@ -172,13 +172,14 @@ and read_move' acc = parse
   | '-' integer as l { dbs "movr" l lexbuf; read_move' (l :: acc) lexbuf   }
   | ")"         as l { dbc "move" l lexbuf;
                        match acc with
-                         | [sx;sy;ex;ey] ->
+                        (* Note---these lists will be backwards *)
+                         | [ey;ex;sy;sx] ->
                              MOVE ( int_of_string sx,
                                     int_of_string sy,
                                     int_of_string ex,
                                     int_of_string ey
                                   )
-                         | [x;y] ->
+                         | [y;x] ->
                              MOVE ( int_of_string x,
                                     int_of_string y,
                                     int_of_string x,
@@ -216,13 +217,14 @@ and read_move_rel' acc = parse
                       }
   | ")"         as l  { dbc "movr" l lexbuf;
                         match acc with
-                         | [sx;sy;ex;ey] ->
+                        (* Note---these lists will be backwards *)
+                         | [ey;ex;sy;sx] ->
                              MOVE_REL ( int_of_string sx,
                                         int_of_string sy,
                                         int_of_string ex,
                                         int_of_string ey
                                       )
-                         | [x;y] ->
+                         | [y;x] ->
                              MOVE_REL ( int_of_string x,
                                         int_of_string y,
                                         int_of_string x,

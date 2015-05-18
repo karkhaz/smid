@@ -349,7 +349,7 @@ let script_of fsa run_length =
     let script_of_keys keys =
       let script = L.map (fun key ->
         let key = S.escaped key
-        in let cmd = "xdotool search --name $WINDOW_NAME key " ^ key
+        in let cmd = "xdotool search --name \"$WINDOW_NAME\" key " ^ key
         in cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
       ) keys
       in L.fold_left (fun acc line ->
@@ -359,18 +359,32 @@ let script_of fsa run_length =
       let comment = match fname with
         | None -> ""
         | Some f-> "# Typing string from file <" ^ f ^ ">:\n"
-      in let cmd = "xdotool search --name $WINDOW_NAME type --window \
+      in let cmd = "xdotool search --name \"$WINDOW_NAME\" type --window \
                     %1 \"" ^ text ^ "\""
       in comment ^ cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
     in let coords_of_region sx sy ex ey =
       let x_range = ex - sx
-      in let x = Random.int x_range
+      in let x_range = if x_range >= 0
+      then x_range
+      else failwith ("Bad range: " ^ (string_of_int sx)
+                  ^  "-" ^ (string_of_int ex))
+      in let rand = if x_range = 0
+      then 0
+      else Random.int x_range
+      in let x = sx + rand
       in let y_range = ey - sy
-      in let y = Random.int y_range
+      in let y_range = if y_range >= 0
+      then y_range
+      else failwith ("Bad range: " ^ (string_of_int sy)
+                  ^  "-" ^ (string_of_int ey))
+      in let rand = if y_range = 0
+      then 0
+      else Random.int y_range
+      in let y = sy + rand
       in (x, y)
     in let script_of_move sx sy ex ey =
       let (x, y) = coords_of_region sx sy ex ey
-      in let cmd = "xdotool search --name $WINDOW_NAME "
+      in let cmd = "xdotool search --name \"$WINDOW_NAME\" "
         ^ "mousemove --window %1 --clearmodifiers --sync "
         ^ (string_of_int x) ^ " " ^ (string_of_int y)
         in cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
@@ -384,17 +398,19 @@ let script_of fsa run_length =
       let button = match side with
         | Left ->  "1"
         | Right -> "3"
-      in let cmd = "xdotool click --clearmodifiers "
-        ^ " --repeat " ^ (string_of_int freq)
-        ^ " " ^ button
+      in let cmd = "xdotool search --name \"$WINDOW_NAME\" "
+                 ^ "click --clearmodifiers "
+                 ^ " --repeat " ^ (string_of_int freq)
+                 ^ " " ^ button
         in cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
     in let script_of_scroll dir freq=
       let button = match dir with
         | Up ->  "4"
         | Down -> "5"
-      in let cmd = "xdotool click --clearmodifiers "
-        ^ " --repeat " ^ (string_of_int freq)
-        ^ " " ^ button
+      in let cmd = "xdotool search --name \"$WINDOW_NAME\" "
+                 ^ "click --clearmodifiers "
+                 ^ " --repeat " ^ (string_of_int freq)
+                 ^ " " ^ button
         in cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
     in let act_to_s  = function
       | KeysAction keys -> script_of_keys keys
