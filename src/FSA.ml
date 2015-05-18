@@ -34,7 +34,11 @@ type action = KeysAction of string list
             | ClickAction of (click_side * int)
             | ScrollAction of (scroll_direction * int)
 
-type trans = (state * action list * state)
+type trans = {
+  src:    state;
+  acts:  action list;
+  dst:   state
+}
 
 type fsa = {
   states: state list;
@@ -188,7 +192,7 @@ let normalise frep =
               let dst = match dst with
                 | FR.DestState s -> s
                 | FR.Stay -> state
-              in (state, acts, dst)
+              in {src=state; acts; dst}
             ) conv_acts
           ) states
           in L.flatten lst
@@ -242,7 +246,7 @@ let dot_of fsa =
       final ^ " [style=filled, color=red];"
     in L.map dot_of_f finals
   in let dot_of_ts transs =
-    let dot_of_t (src, acts, dst) =
+    let dot_of_t {src; acts; dst} =
       let dot_of_act = function
         | ScrollAction (d, n) ->
             let dir = match d with
@@ -305,7 +309,7 @@ let dot_of fsa =
 
 let script_of fsa run_length =
   let get_nexts source =
-    L.filter (fun (src, _, _) -> src = source) fsa.transs
+    L.filter (fun {src; _} -> src = source) fsa.transs
   in let random_delay =
     "r=$RANDOM; let \"r %=10\"; let \"r += 2\"; "
     ^ "sleep `bc -l <<< \"1 / $r\"`"
@@ -425,7 +429,7 @@ let script_of fsa run_length =
       (act_to_s act) ^ "\n" ^ acc
     ) "" acts
   in let add_trans trans acc =
-    let trans_to_s (src, acts, dst) =
+    let trans_to_s {src; acts; dst} =
       let comment =
         if src = dst
         then ""
@@ -442,21 +446,21 @@ let script_of fsa run_length =
              post_hooks ^ "\n"
       in comment ^ (acts_to_s acts)
     in (trans_to_s trans) :: acc
-  in let is_final (_, _, dest) = L.mem dest fsa.finals
+  in let is_final {src; acts; dst} = L.mem dst fsa.finals
   in let rec script_of fsa run_length curr acc =
     match run_length with
       | 0 ->
           let nexts = get_nexts curr
-          in if  L.exists is_final nexts
-             then let (_, _, final) = L.find is_final nexts
-                   in (final, (add_trans (L.find is_final nexts) acc))
-             else let (s, _, _) as next = U.random_from_list nexts
-                  in script_of fsa 0 s (add_trans next acc)
+          in  if  L.exists is_final nexts
+              then let {src; acts; dst} = L.find is_final nexts
+                   in (dst, (add_trans (L.find is_final nexts) acc))
+              else let {src; _} as next = U.random_from_list nexts
+                   in script_of fsa 0 src (add_trans next acc)
       | n ->
           let nexts = get_nexts curr
           in let nexts = L.filter (fun s -> not (is_final s)) nexts
-          in let (_, _, d) as next = U.random_from_list nexts
-          in script_of fsa (n - 1) d (add_trans next acc)
+          in let {src; acts; dst} as next = U.random_from_list nexts
+          in script_of fsa (n - 1) dst (add_trans next acc)
   in let start_state = U.random_from_list fsa.inits
   in let final_state, script = script_of fsa run_length start_state []
   in let script = L.fold_left (fun acc line ->
