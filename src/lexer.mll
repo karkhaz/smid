@@ -168,7 +168,8 @@ and read_move' acc = parse
   | ','              {                      read_move' acc lexbuf          }
   | nl          as l { dbc "move" l lexbuf; incr_ln lexbuf; read_move' acc lexbuf }
   | '#' line nl as l { dbs "move" l lexbuf; incr_ln lexbuf; read_move' acc lexbuf }
-  | integer     as l { dbs "move" l lexbuf; read_keys' (l :: acc) lexbuf   }
+  | integer     as l { dbs "move" l lexbuf; read_move' (l :: acc) lexbuf   }
+  | '-' integer as l { dbs "movr" l lexbuf; read_move' (l :: acc) lexbuf   }
   | ")"         as l { dbc "move" l lexbuf;
                        match acc with
                          | [sx;sy;ex;ey] ->

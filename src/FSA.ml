@@ -249,8 +249,11 @@ let dot_of fsa =
               | Up -> "ScrUp "
               | Down -> "ScrDown "
             in dir ^ "x" ^ (string_of_int n)
-        | MoveAction (_, sx, sy, ex, ey) ->
-            "move " ^ string_of_coords sx sy ex ey
+        | MoveAction (r, sx, sy, ex, ey) -> (
+            match r with
+              | None -> "move " ^ string_of_coords sx sy ex ey
+              | Some region -> "move to '" ^ region ^ "'"
+        )
         | MoveRelAction (_, sx, sy, ex, ey) ->
             "rel-move " ^ string_of_coords sx sy ex ey
         | ClickAction (side, freq) ->
@@ -277,7 +280,7 @@ let dot_of fsa =
             in "\\\"" ^ str ^ "\\\""
       in let dot_of_acts acts =
         let str = L.fold_left (fun acc act ->
-          (dot_of_act act) ^ "; " ^ acc
+          (dot_of_act act) ^ ";\n" ^ acc
           ) "" acts
         in S.sub str 0 (S.length str - 2)
       in let acts = dot_of_acts acts
