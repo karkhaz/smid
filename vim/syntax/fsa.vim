@@ -7,22 +7,26 @@ if exists("b:current_syntax")
   finish
 endif
 
-syn match fsaComment "\v^#.+$"
+syn match fsaComment "\v#.+$" contained
+syn match fsaTopComment "\v#.+$"
 hi link   fsaComment Comment
+hi link   fsaTopComment Comment
 
-syn match fsaAction "\v(keys|verb|line)"
+syn match fsaAction "\v(keys|text|line|click|clik|scroll|scrl|move|move-rel|movr)"
 hi link   fsaAction   Type
 
-syn match fsaKeyword "\v(all-except|all|stay|pre|post|initial|final)"
+syn match fsaKeyword "\v(all-except|all|stay|pre|post|initial|final|region|\=)"
 hi link   fsaKeyword   Identifier
 
-syn region fsaActionBlock start="--" end="-->" contains=fsaAction,fsaString,fsaList
+syn region fsaActionBlock start="--" end="-->" contains=fsaAction,fsaString,fsaList,fsaCoords,fsaComment
 hi link fsaActionBlock Keyword
 
 syn region fsaString start='"' end='"' contained
 syn region fsaList   start='\[' end='\]' contained
+syn region fsaCoords start='(' end=')' contained
 hi link    fsaString String
-hi link    fsaList String
+hi link    fsaList   String
+hi link    fsaCoords String
 
 
 syntax include @Bash syntax/sh.vim
