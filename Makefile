@@ -53,17 +53,24 @@ $(TMP_DIR)/%.dot: state-machines/%.smid $(wildcard support-files/%/*) smid
 	@mkdir -p $(TMP_DIR)
 	@./smid -d --include-dir support-files/$(notdir $(basename $@)) $< > $@
 
-
 images/%.png: $(TMP_DIR)/%.dot
 	@echo Generating $@
 	@mkdir -p $(dir $@)
 	@$(DOT) -Tpng $<  >  $@
 
-
+.PHONY: clean
 clean:
 	@-rm -rf  src/$(BIN)  src/_build  images/*
 
+.PHONY: vimfiles
+vimfiles: $(wildcard vim/*/*)
+	@mkdir -p ~/.vim/ftdetect
+	@mkdir -p ~/.vim/syntax
+	@cp vim/syntax/sm.vim ~/.vim/syntax
+	@cp vim/ftdetect/sm.vim ~/.vim/ftdetect
 
+
+.PHONY: check
 check:
 	@which $(DOT) >/dev/null
 	@which $(XDOTOOL) >/dev/null

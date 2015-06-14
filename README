@@ -30,6 +30,30 @@ Running 'make' in the top level directory will:
 
 
 
+Structure
+---------
+|
+\_ images ............. Generated PNG images of state machines
+|
+\_ src ................ OCaml source; generated files go in _build
+|                       subdirectory.
+|
+\_ state-machines ..... One state machine file for every program
+|  |_ firefox.sm
+|  \_ toaster.sm
+|
+\_ support-files ...... Auxiliary data files for state machines. One
+|  |_ firefox           directory for every .sm file in state-machines.
+|  |  |_ urls.lines
+|  |  \_ random.lines
+|  |
+|  \_ toaster
+|
+\_ vim ................ Vim syntax highlighting files, install with
+                        'make vimfiles'
+
+
+
 Maintainer
 ----------
 
