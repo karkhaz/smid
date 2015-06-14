@@ -26,7 +26,7 @@ Building
 
 Running 'make' in the top level directory will:
 * Build smid
-* Create PNG images of the .smid files in the state-machines directory
+* Create PNG images of the .sm files in the state-machines directory
 
 
 

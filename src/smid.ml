@@ -35,24 +35,24 @@ let mode = ref None
 let max_depth = ref 5
 
 let usage_msg =
-"Usage: smid -c [OPTION...] FSA_FILE
-       smid -d [OPTION...] FSA_FILE
-       smid -r [OPTION...] FSA_FILE
-       smid -s [OPTION...] FSA_FILE
+"Usage: smid -c [OPTION...] SM_FILE
+       smid -d [OPTION...] SM_FILE
+       smid -r [OPTION...] SM_FILE
+       smid -s [OPTION...] SM_FILE
 "
 
 let rec _speclist = [
   ("-c", Unit (function () -> set_mode CompileOnly),
-   " Check syntax of FSA file only")
+   " Check syntax of SM file only")
   ;
   ("-d", Unit (function () -> set_mode DOT),
-   " Print out a DOT representation of FSA file")
+   " Print out a DOT representation of an SM file")
   ;
   ("-r", Unit (function () -> set_mode Script),
    " Generate run script")
   ;
   ("-s", Unit (function () -> set_mode Stats),
-   " Print out FSA statistics")
+   " Print out SM statistics")
   ;
   ("--loops", Unit (function () -> C.loops := false),
    " With -d, make transitions to the same state loop back on themselves")
