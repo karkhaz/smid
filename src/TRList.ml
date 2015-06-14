@@ -1,4 +1,4 @@
-(* Global configuration options
+(* Tail-recursive versions of stdlib List functions
  * Copyright (C) 2015 Kareem Khazem
  *
  * This file is part of smid.
@@ -17,10 +17,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-let debug = ref false
+module L = List
 
-let loops = ref true
 
-let run_length = ref 200
 
-let include_dir = ref "."
+let map ?(rev=false) f lst =
+  let rec map f lst acc =
+    match lst with
+      | [] -> acc
+      | h :: t -> map f t (f h :: acc)
+  in if rev
+     then L.rev (map f lst [])
+     else map f lst []
+
+
+
+let concat ?(rev=false) lst =
+  let rec concat lst acc =
+    match lst with
+      | [] -> acc
+      | [h] :: t ->
+          concat t (h :: acc)
+      | (h::t) :: t2 ->
+          concat (t :: t2) (h :: acc)
+      | [] :: t2 ->
+          concat t2 acc
+  in if rev
+     then L.rev (concat lst [])
+     else concat lst []
