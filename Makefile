@@ -45,7 +45,7 @@ smid: src/$(BIN)
 
 src/$(BIN): $(SRC)
 	@echo Building smid
-	@cd src && $(OCB) -cflags $(FLAGS) -r -libs $(LIBS) -I lib $(BIN)
+	@cd src && $(OCB) -cflags $(FLAGS) -r -libs $(LIBS) $(BIN)
 
 
 $(TMP_DIR)/%.dot: state-machines/%.smid $(wildcard support-files/%/*) smid
