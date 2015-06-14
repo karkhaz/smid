@@ -17,8 +17,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-FSA_FILES=$(wildcard examples/*.fsa)
-FSA_DIAGRAMS=$(patsubst examples/%.fsa,out/%.png,$(FSA_FILES))
+DOT=circo
+XDOTOOL=xdotool
+AWK=awk
+OCB=ocamlbuild
+OCO=ocamlopt
+
+SMID_FILES=$(wildcard state-machines/*.smid)
+SMID_DIAGRAMS=$(patsubst state-machines/%.smid,images/%.png,$(SMID_FILES))
+
+TMP_DIR=/tmp/smid
 
 BIN=smid.native
 
@@ -28,15 +36,38 @@ FLAGS=-warn-error,+A,-safe-string,-g
 SRC=$(wildcard src/*.ml) $(wildcard src/*.mll) \
 		$(wildcard src/*.mly)
 
-TARGETS=src/$(BIN) smid
+TARGETS=smid $(SMID_DIAGRAMS)
 
 default: $(TARGETS)
 
 smid: src/$(BIN)
 
+
 src/$(BIN): $(SRC)
-	@echo Compiling
-	@cd src && ocamlbuild -cflags $(FLAGS) -r -libs $(LIBS) -I lib $(BIN)
+	@echo Building smid
+	@cd src && $(OCB) -cflags $(FLAGS) -r -libs $(LIBS) -I lib $(BIN)
+
+
+$(TMP_DIR)/%.dot: state-machines/%.smid $(wildcard support-files/%/*) smid
+	@echo Generating $(notdir $@)
+	@mkdir -p $(TMP_DIR)
+	@./smid -d --include-dir support-files/$(notdir $(basename $@)) $< > $@
+
+
+images/%.png: $(TMP_DIR)/%.dot
+	@echo Generating $@
+	@mkdir -p $(dir $@)
+	@$(DOT) -Tpng $<  >  $@
+
 
 clean:
-	@-rm -rf  src/$(BIN)  src/_build
+	@-rm -rf  src/$(BIN)  src/_build  images/*
+
+
+check:
+	@which $(DOT) >/dev/null
+	@which $(XDOTOOL) >/dev/null
+	@which $(OCB) >/dev/null
+	@which $(OCO) >/dev/null
+	@which $(AWK) >/dev/null
+	@test `$(OCO) -version | $(AWK) -F . '{print $$1 $$2}'` -ge 402

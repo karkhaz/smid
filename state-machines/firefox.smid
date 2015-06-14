@@ -1,0 +1,78 @@
+initial start
+final quit
+
+pre start {
+  WINDOW_NAME="\- Iceweasel"
+  iceweasel &
+  sleep 3
+}
+
+region address_bar = (130, 50)
+region back_button = (40, 40, 70, 60)
+region main_page   = (20, 80, 1000, 700)
+
+all -- keys [ Control+Q ] --> quit
+
+# Start by going to a random page loaded from "urls.lines"
+all --
+  move address_bar
+  clik (2, left)
+  line "urls.lines"
+  keys [ Return ]
+--> random_page
+
+# Or do a google search for something
+all-except google_front --
+  move address_bar
+  clik (2, left)
+  text "www.google.co.uk"
+  keys [ Return ]
+--> google_front
+
+google_front --
+  move (300, 385, 600, 412)  # Search bar
+  clik (1, left)
+  line "search_terms.lines"
+  keys [ Return ]
+--> google_results
+
+google_results --
+  move (150, 200, 470, 700)  # Region where search results are
+  clik (1, left)
+--> random_page
+
+google_image_results --
+  move (150, 200, 800, 700)  # Pick a random image
+  clik (1, left)
+  move (800, 500)            # Visit page button
+  clik (1, left)
+--> random_page
+
+random_page --
+  move main_page
+  clik (1, left)
+  prob high
+--> random_page
+
+random_page -- scrl (10, up)   --> random_page
+random_page -- scrl (10, down) --> random_page
+random_page -- scrl (30, up)   --> random_page
+random_page -- scrl (30, down) --> random_page
+
+# Open a new tab, then start over
+all -- keys [ Control+t ] --> start
+
+
+# History window
+
+region history_list = (200, 60, 600, 200)
+
+pre  history_window { WINDOW_NAME="Library"      }
+post history_window { WINDOW_NAME="\- Iceweasel" }
+
+all -- keys [ Control+Shift+h ] --> history_window
+
+history_window --
+  move history_list
+  click (2, left)
+--> random_page

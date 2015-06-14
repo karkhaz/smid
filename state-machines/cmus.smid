@@ -1,0 +1,70 @@
+# Initial and final states
+initial start
+final quit
+
+pre start {
+xfce4-terminal -e cmus &
+WINDOW_NAME=cmus
+}
+
+# Quitting cmus
+all-except start, search -- keys [ q y ] --> quit
+# Invoke quit dialog, then change our mind about quitting
+all-except start, search -- keys [ q n ] --> stay
+
+# We can always switch to a different view
+all-except search, artist_pane     -- keys [ 1 ] --> artist_pane
+all-except search, library_view    -- keys [ 2 ] --> library_view
+all-except search, playlist_view   -- keys [ 3 ] --> playlist_view
+all-except search, play_queue_view -- keys [ 4 ] --> play_queue_view
+all-except search, browser_view    -- keys [ 5 ] --> browser_view
+all-except search, filters_view    -- keys [ 6 ] --> filters_view
+all-except search, settings_view   -- keys [ 7 ] --> settings_view
+
+# We can always scroll up and down
+all-except start, search -- keys [ j ] --> stay
+all-except start, search -- keys [ k ] --> stay
+
+# ARTIST / ALBUM VIEW (VIEW 1) ######################################
+
+# Switching between the two panes
+artist_pane -- keys [ Tab ] --> album_pane
+album_pane  -- keys [ Tab ] --> artist_pane
+
+# Searching
+artist_pane -- keys [ slash ] --> search
+
+search --
+  line "artists.lines"
+  keys [ Return ]
+--> artist_pane
+
+# Expand an album in artist pane
+artist_pane -- keys [ space ] --> artist_pane
+
+# Playing a track (we don't want to do this, see above for [c]
+#album_pane artist_pane -- keys [ Return ] --> stay
+
+# Adding items to the playlist
+album_pane -- keys [ y ] --> album_pane
+# Append items to play queue
+album_pane -- keys [ e ] --> album_pane
+# Prepend items to play queue
+album_pane -- keys [ E ] --> album_pane
+
+
+# PLAYLIST & PLAY QUEUE (VIEWS 3 & 4) ###############################
+
+# delete an item
+playlist_view, play_queue_view -- keys [ d ] --> stay
+# play an item
+playlist_view, play_queue_view -- keys [ Return ] --> stay
+
+
+# BROWSER (VIEW 5) ##################################################
+
+# Enter a directory
+browser_view -- keys [ Return ] --> stay
+
+
+# FILTER  (VIEW 6) ##################################################

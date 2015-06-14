@@ -1,0 +1,36 @@
+                            smid
+                            ====
+
+smid is a tool for autonomously driving programs in a realistic manner.
+
+For more information on using smid, see the project webpage at
+http://karkhaz.com/smid
+
+
+
+Dependencies
+------------
+
+* OCaml >= 4.02
+* make
+* Graphviz (for visualising state machines)
+* xdotool  (for autonomously driving applications)
+
+Running 'make check' will exit normally iff all the dependencies are
+correctly installed.
+
+
+
+Building
+--------
+
+Running 'make' in the top level directory will:
+* Build smid
+* Create PNG images of the .smid files in the state-machines directory
+
+
+
+Maintainer
+----------
+
+Kareem Khazem <karkhaz@karkhaz.com>
