@@ -1,5 +1,5 @@
 " Vim syntax file
-" Language: FSA files for black-box testing
+" Language: smid files for black-box testing
 " Maintainer: Kareem Khazem
 " Latest Revision: 24 March 2015
 
