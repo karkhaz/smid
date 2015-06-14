@@ -5,7 +5,7 @@
 FSA_FILES=$(wildcard examples/*.fsa)
 FSA_DIAGRAMS=$(patsubst examples/%.fsa,out/%.png,$(FSA_FILES))
 
-BIN=uidrive.native
+BIN=smid.native
 
 LIBS=unix,str
 FLAGS=-warn-error,+A,-safe-string,-g
@@ -13,9 +13,11 @@ FLAGS=-warn-error,+A,-safe-string,-g
 SRC=$(wildcard src/*.ml) $(wildcard src/*.mll) \
 		$(wildcard src/*.mly)
 
-TARGETS=src/$(BIN)
+TARGETS=src/$(BIN) smid
 
 default: $(TARGETS)
+
+smid: src/$(BIN)
 
 src/$(BIN): $(SRC)
 	@echo Compiling

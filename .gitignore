@@ -1,0 +1,3 @@
+.*.swp
+src/_build
+*.native

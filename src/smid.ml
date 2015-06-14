@@ -1,4 +1,4 @@
-(* UIDrive front-end
+(* smid front-end
  *
  * Author: Kareem Khazem <karkhaz@karkhaz.com>
  * Date:   2015
@@ -22,10 +22,10 @@ let mode = ref None
 let max_depth = ref 5
 
 let usage_msg =
-"Usage: uidrive -c [OPTION...] FSA_FILE
-       uidrive -d [OPTION...] FSA_FILE
-       uidrive -r [OPTION...] FSA_FILE
-       uidrive -s [OPTION...] FSA_FILE
+"Usage: smid -c [OPTION...] FSA_FILE
+       smid -d [OPTION...] FSA_FILE
+       smid -r [OPTION...] FSA_FILE
+       smid -s [OPTION...] FSA_FILE
 "
 
 let rec _speclist = [
