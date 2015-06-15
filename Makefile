@@ -23,8 +23,8 @@ AWK=awk
 OCB=ocamlbuild
 OCO=ocamlopt
 
-SMID_FILES=$(wildcard state-machines/*.smid)
-SMID_DIAGRAMS=$(patsubst state-machines/%.smid,images/%.png,$(SMID_FILES))
+SMID_FILES=$(wildcard state-machines/*.sm)
+SMID_DIAGRAMS=$(patsubst state-machines/%.sm,images/%.png,$(SMID_FILES))
 
 TMP_DIR=/tmp/smid
 
@@ -48,7 +48,7 @@ src/$(BIN): $(SRC)
 	@cd src && $(OCB) -cflags $(FLAGS) -r -libs $(LIBS) $(BIN)
 
 
-$(TMP_DIR)/%.dot: state-machines/%.smid $(wildcard support-files/%/*) smid
+$(TMP_DIR)/%.dot: state-machines/%.sm $(wildcard support-files/%/*) smid
 	@echo Generating $(notdir $@)
 	@mkdir -p $(TMP_DIR)
 	@./smid -d --include-dir support-files/$(notdir $(basename $@)) $< > $@
