@@ -334,7 +334,8 @@ let dot_of fsa =
   in let body = L.fold_left (fun acc line ->
     "  " ^ line ^ "\n" ^ acc
       ) "" lines
-  in "digraph G {\n  node [shape=box];\n  " ^ (S.trim body) ^ "\n}\n"
+  in "digraph G {\n  node [shape=box];\nrankdir=LR;\n  "
+    ^ (S.trim body) ^ "\n}\n"
 
 
 
