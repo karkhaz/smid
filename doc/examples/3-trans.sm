@@ -1,0 +1,3 @@
+foo     -- keys [ Ctrl+K ] --> bar
+bar baz -- keys [ Ctrl+M ] --> foo
+bar     -- keys [ Ctrl+U ] --> baz
