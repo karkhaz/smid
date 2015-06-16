@@ -93,7 +93,7 @@ let get_fsa fsa_file =
       | Lexer.SyntaxError ->
           let lexeme = Lexing.lexeme lexbuf
           in let msg =
-            format_of_string "Error at %s:%d:%d: Unexpected token <%s>"
+            format_of_string "%s:%d:%d: Unexpected token <%s>"
           in let line = lexbuf.Lexing.lex_curr_p.pos_lnum
           in let c2bol = lexbuf.Lexing.lex_curr_p.pos_bol
           in let c2cur = lexbuf.Lexing.lex_curr_p.pos_cnum
@@ -103,7 +103,7 @@ let get_fsa fsa_file =
            ; exit 1
       | Failure fail ->
           let msg =
-            format_of_string "Error at %s:%d:0: <%s>"
+            format_of_string "%s:%d:0: <%s>"
           in let line = lexbuf.Lexing.lex_curr_p.pos_lnum
           in let msg = sprintf msg fsa_file line fail
           in eprintf "%s\n" msg
