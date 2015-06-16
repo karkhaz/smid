@@ -33,7 +33,7 @@ transforms = [
 ],
 [
   /\{(?<script>.+?)\}/m,
-  '<span class="sm-script">{</span>\k<script><span class="sm-script">}</span>'
+  '<span class="sm-script">{\k<script>}</span>'
 ],
 [
   /^(?<comment>#.+)$/,
@@ -70,6 +70,4 @@ transforms.each do |pair|
   file.gsub!(regex, replacement)
 end
 
-printf "<p class=\"block\"><code>"
 printf file
-printf "</code></p>"
