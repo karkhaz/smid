@@ -1,0 +1,15 @@
+# This is a comment whoo!
+
+initial some_state
+final another_state
+
+nice_state --
+  keys  [ Ctrl+b Return ]
+  text  "The user types something"
+  click (1 right)
+--> naughty_state
+
+post happy_state {
+  find . -name "happy*"
+  VAR=VAL
+}
