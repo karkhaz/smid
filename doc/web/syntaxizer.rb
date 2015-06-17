@@ -55,7 +55,7 @@ transforms = [
   /\n/, "<br />\n"
 ],
 [
-  /-->\s+(?<state>\w+)/,
+  /-->\s+(?<state>[-"><\/\w]+)/,
   '<span class="sm-transition">--&gt;</span> \k<state>'
 ],
 [
