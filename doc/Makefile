@@ -17,4 +17,4 @@ examples/%.dot: examples/%.tmp.dot dot_formatter.rb
 	@cat $< | ./dot_formatter.rb > $@
 
 examples/%.tmp.dot: examples/%.sm
-	@../smid -d $< > $@
+	@../smid --loops -d $< > $@

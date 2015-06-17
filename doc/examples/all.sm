@@ -1,0 +1,4 @@
+final quit
+
+foo bar baz -- keys [ Ctrl+Q ] --> quit
+all -- keys [ Ctrl+Q ] --> quit

@@ -51,15 +51,6 @@ picture of the state machine, generated with `smid -d`.
 
 
 
-<h2 id="comments">Comments</h2>
-
-**Syntax:** Comments start with the hash character (`#`) and continue
-to the end of the line.
-
-**Meaning:** `smid` ignores comments completely.
-
-
-
 <h2 id="transitions">Transitions</h2>
 
 **Syntax:** Transitions generally have the following shape:
@@ -68,7 +59,7 @@ to the end of the line.
 
 * The `start-state(s)` is a space-delimited list of states. The list
   of states may be preceeded with the keyword [`all`](#all) or
-  [`all-except`](#all).
+  [`all-except`](#all-except).
 * The `end-state` is the name of a state, or the keyword
   [`stay`](#stay).
 * A space-delimited list of at least one [`action`](#actions) goes in
@@ -96,13 +87,158 @@ If the current state is `bar`, then `smid` can either:
   state to `baz`.
 
 
-<h3 id="transition-variations">Variations</h3>
+<h3 id="multiple">Multiple start states</h3>
 
-If there are several actions in a transition, the preferred way to
-write them is across multiple lines:
+If we can do the same action from several states in the state machine,
+you can specify all the states on the same line. The first line in the
+following example is equivalent to the next three lines:
+
+<p class="block"><code>
+@import examples/same-line.sm
+</code></p>
+![same-line](examples/same-line.png)
+
+
+<h3 id="all">all</h3>
+
+If we can do the same action from *all* states in the state machine,
+ the `all` keyword can be used to specify this more concisely. If
+ `foo`, `bar`, `baz` and `quit` are the only states in the state
+ machine, then the last two lines are equivalent:
+
+<p class="block"><code>
+@import examples/all.sm
+</code></p>
+![all](examples/all.png)
+
+Note that there is no action from the `quit` state to itself, since
+`quit` was declared as a [final state](#final-declarations) and final
+states do not have outgoing edges.
+
+<h3 id="all-except">all-except</h3>
+
+If we can do the same action from all states *except for a few*, the
+`all-except` keyword can be used to specify this more concisely.
+
+<p class="block"><code>
+@import examples/all-except.sm
+</code></p>
+![all-except](examples/all-except.png)
+
+
+<h3 id="stay">stay</h3>
+
+If we have several states where the same action causes a transition
+*back to the same state,* the `stay` keyword can be used to specify
+this more concisely. In the following example, the first line is
+equivalent to the next three:
+
+<p class="block"><code>
+@import examples/stay.sm
+</code></p>
+![stay](examples/stay.png)
+
+In that previous example, if `foo`, `bar` and `baz` were the only
+states on the state machine, we could also have written
+
+<p class="block"><code>
+@import examples/all-stay.sm
+</code></p>
+
+
+<h3 id="actions">Actions</h3>
+
+Actions describe the ways in which `smid` can interact with your
+application. If `smid` walks over a transition, it will perform all of
+the actions specified in the transition. In the following example,
+there are two actions in the transition:
+
 <p class="block"><code>
 @import examples/multi-action.sm
 </code></p>
+
+Actions consist of a keyword (like `keys`) and a body (like
+`[Escape`]).  Multiple actions are separated by whitespace. When
+writing a transition with multiple actions, it is recommended to
+format it as above: each action on its own indented line. To help with
+alignment, all actions have a four-character alias; we could have
+written `scrl` above instead of `scroll`, to keep the bodies of the
+actions lined up.
+
+
+<h4 id="keys">keys</h4>
+
+**Syntax:** The keyword `keys`, followed by a space-delimited list of
+keysyms. The list is surrounded with square braces `[ ]`. 'Keysyms'
+are names for keys; a list of valid keysyms can be found
+[here](http://wiki.linuxquestions.org/wiki/List_of_KeySyms), along
+with [additional
+keysyms](http://wiki.linuxquestions.org/wiki/XF86_keyboard_symbols)
+sometimes found on laptops. Key combinations are separated using the
+plus sign `+`.
+
+**Meaning:** The `keys` action causes `smid` to send keypresses to your
+application, as if the user had made those entered keypresses on the
+keyboard.
+
+**Example:**
+
+    keys [ Ctrl+M  5  space  Return ]
+
+
+
+
+<h4 id="text">text</h4>
+
+    text "quoted text"
+
+
+
+<h4 id="line">line</h4>
+
+    line "filename"
+
+
+<h4 id="move">move</h4>
+
+    move [ x y ]
+    move [ start_x start_y end_x end_y ]
+    move region_name
+
+
+
+<h4 id="move-rel">move_rel / movr</h4>
+
+    move_rel [ x y ]
+    movr     [ x y ]
+
+
+
+
+<h4 id="click">click / clik</h4>
+
+    click ( frequency left  )
+    click ( frequency right )
+    clik  ( frequency left  )
+    clik  ( frequency right )
+
+
+
+
+
+<h4 id="scroll">scroll / scrl</h4>
+
+    scroll ( distance up   )
+    scroll ( distance down )
+    scrl   ( distance up   )
+    scrl   ( distance down )
+
+
+
+
+
+
+
 
 
 
@@ -122,3 +258,14 @@ interact with your application by taking one of the
 
 
 <h2 id="state-hook-declarations">State hooks</h2>
+
+
+
+<h2 id="comments">Comments</h2>
+
+**Syntax:** Comments start with the hash character (`#`) and continue
+to the end of the line.
+
+**Meaning:** `smid` ignores comments completely.
+
+

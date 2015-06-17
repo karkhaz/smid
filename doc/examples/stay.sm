@@ -1,0 +1,5 @@
+foo bar baz -- keys [ Ctrl-R ] --> stay
+
+foo -- keys [ Ctrl-R ] --> foo
+bar -- keys [ Ctrl-R ] --> bar
+baz -- keys [ Ctrl-R ] --> baz

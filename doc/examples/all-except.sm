@@ -1,0 +1,7 @@
+final quit
+
+foo -- keys [ a ] --> bar
+baz -- keys [ b ] --> qux
+zork -- keys [ c ] --> bork
+
+all-except foo baz -- keys [ Ctrl-Q ] --> quit
