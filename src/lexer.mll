@@ -132,7 +132,7 @@ and read_keys' acc = parse
   | keypress    as l { dbs "keyp" l lexbuf; read_keys' (l :: acc) lexbuf   }
 
 
-(* Rules for lexing verbatin text, invoked when we see the text keyword
+(* Rules for lexing verbatim text, invoked when we see the text keyword
  * at the top-level *)
 and read_verbatim u = parse
   | ws       {                         read_verbatim () lexbuf }
@@ -228,7 +228,10 @@ and read_move' acc = parse
 and read_move_rel u = parse
   | ws       {                      read_move_rel ()  lexbuf }
   | '(' as l { dbc "pmvr" l lexbuf; read_move_rel' [] lexbuf }
-  | nl  as l { dbc "pmvr" l lexbuf; incr_ln lexbuf; read_move_rel () lexbuf }
+  | nl  as l {
+               dbc "pmvr" l lexbuf; incr_ln lexbuf;
+               read_move_rel () lexbuf
+             }
   | _        { raise SyntaxError }
 and read_move_rel' acc = parse
   | ws                { read_move_rel' acc lexbuf }
