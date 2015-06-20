@@ -68,6 +68,10 @@ type fsa = {
 }
 
 
+let error str =
+  match !Config.fsa_file with
+    | None -> (* impossible *) failwith "Empty fsa file"
+    | Some file -> eprintf "%s:0:0: %s\n%!" file str
 
 (* Checks for the following conditions:
  * - We never get to a state that is stuck
@@ -76,11 +80,7 @@ type fsa = {
  * - All states can reach some final state
  *)
 let is_sane fsa =
-  let error str =
-    match !Config.fsa_file with
-      | None -> (* impossible *) failwith "Empty fsa file"
-      | Some file -> eprintf "%s:0:0: %s\n%!" file str
-  in let inits_and_finals {inits=inits; finals=finals; _} =
+  let inits_and_finals {inits=inits; finals=finals; _} =
     let _inits inits =
       if L.length inits > 0
       then true
@@ -189,7 +189,7 @@ let normalise frep =
     ) None frep
     in match result with
       | Some coords -> coords
-      | None -> failwith ("Unknown region '" ^ alias ^ "'")
+      | None -> (error ("Unknown region '" ^ alias ^ "'"); exit 1)
   in let states_from_frep get_states_fun =
     let all_states = L.fold_left (fun acc entry ->
       acc @ (get_states_fun entry)
@@ -472,7 +472,9 @@ let script_of fsa run_length =
     in let lst = L.filter (fun l -> L.length l > 0) lst
     in let (h, t) = match lst with
       | h :: t -> (h, t)
-      | [] -> failwith ("Stuck.")
+      | [] -> (* impossible, there should be no stuck states if the
+               * is_sane function has done its job properly.
+               *) failwith ("Stuck.")
     in L.fold_left (fun acc e ->
       let rand = Random.int 20
       in if rand = 0
@@ -539,8 +541,8 @@ let script_of fsa run_length =
       let x_range = ex - sx
       in let x_range = if x_range >= 0
       then x_range
-      else failwith ("Bad range: " ^ (string_of_int sx)
-                  ^  "-" ^ (string_of_int ex))
+      else (error ("Bad range: " ^ (string_of_int sx)
+                    ^  "-" ^ (string_of_int ex)); exit 1)
       in let rand = if x_range = 0
       then 0
       else Random.int x_range
@@ -548,8 +550,8 @@ let script_of fsa run_length =
       in let y_range = ey - sy
       in let y_range = if y_range >= 0
       then y_range
-      else failwith ("Bad range: " ^ (string_of_int sy)
-                  ^  "-" ^ (string_of_int ey))
+      else (error ("Bad range: " ^ (string_of_int sy)
+                    ^  "-" ^ (string_of_int ey)); exit 1)
       in let rand = if y_range = 0
       then 0
       else Random.int y_range

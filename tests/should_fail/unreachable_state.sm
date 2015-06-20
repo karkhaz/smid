@@ -1,0 +1,5 @@
+initial foo
+final bar
+
+# Can't get to baz from foo
+baz -- keys [ a ] --> bar

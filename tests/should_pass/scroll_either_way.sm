@@ -1,0 +1,8 @@
+# Make sure that the parameters to the click action can be specified
+# in either order.
+
+initial foo
+final bar
+
+foo -- scrl ( 1 up   ) --> bar
+foo -- scrl ( down 2 ) --> bar

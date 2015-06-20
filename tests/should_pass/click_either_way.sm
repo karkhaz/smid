@@ -1,0 +1,8 @@
+# Make sure that the parameters to the click action can be specified
+# in either order.
+
+initial foo
+final bar
+
+foo -- clik ( 1 left  ) --> bar
+foo -- clik ( right 2 ) --> bar

@@ -1,0 +1,7 @@
+initial foo
+final bar
+
+# fail because 5 < 10
+region (20 10 50 5)
+
+foo -- keys [ a ] --> bar

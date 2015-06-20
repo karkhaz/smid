@@ -59,6 +59,9 @@ images/%.png: $(TMP_DIR)/%.dot
 	@mkdir -p $(dir $@)
 	@$(DOT) -Tpng $<  >  $@
 
+
+# Non-default targets ================================================
+
 .PHONY: clean
 clean:
 	@-rm -rf  src/$(BIN)  src/_build  images/*
@@ -70,12 +73,26 @@ vimfiles: $(wildcard vim/*/*)
 	@cp vim/syntax/sm.vim ~/.vim/syntax
 	@cp vim/ftdetect/sm.vim ~/.vim/ftdetect
 
-
 .PHONY: check
 check:
-	@which $(DOT) >/dev/null
-	@which $(XDOTOOL) >/dev/null
-	@which $(OCB) >/dev/null
-	@which $(OCO) >/dev/null
-	@which $(AWK) >/dev/null
+	@which $(DOT)
+	@which $(XDOTOOL)
+	@which $(OCB)
+	@which $(OCO)
+	@which $(AWK)
+	@echo -n "OCaml version " && $(OCO) -version
 	@test `$(OCO) -version | $(AWK) -F . '{print $$1 $$2}'` -ge 402
+
+
+# Tests ==============================================================
+
+SHOULD_FAIL=$(wildcard tests/should_fail/*.sm)
+SHOULD_PASS=$(wildcard tests/should_pass/*.sm)
+
+test: $(SHOULD_PASS) $(SHOULD_FAIL)
+
+tests/should_fail/%.sm: $(BIN)
+	@! ./$(BIN) -c $@ 2>/dev/null || echo "Unexpected pass:" $(notdir $@)
+
+tests/should_pass/%.sm: $(BIN)
+	@./$(BIN) -c $@ || echo "Unexpected fail: " $(notdir $@)
