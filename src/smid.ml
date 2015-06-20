@@ -31,6 +31,8 @@ type mode = CompileOnly
 
 let mode = ref None
 
+let sanity_check = ref true
+
 let max_depth = ref 5
 
 let usage_msg =
@@ -65,6 +67,9 @@ let rec _speclist = [
   ;
   ("--debug", Unit (function () -> C.debug := true),
    " Switch on debug output")
+  ;
+  ("--no-sanity-check", Unit (function () -> sanity_check := false),
+   " Turn off strict checking of SM file")
   ;
 ]
 and speclist () = align _speclist
@@ -113,7 +118,11 @@ let get_fsa fsa_file =
       exit 1
 
 let () =
-  parse (speclist ()) anon_fun usage_msg;
+  let check_fsa fsa =
+    if !sanity_check
+    then is_sane fsa
+    else true
+  in parse (speclist ()) anon_fun usage_msg;
   Random.self_init ();
   match !C.fsa_file, !mode with
     | None, _
@@ -123,7 +132,7 @@ let () =
         in let mode = mode
         in let fsa = get_fsa fsa_file
                   |> normalise
-        in if not (is_sane fsa)
+        in if not (check_fsa fsa)
         then exit 1
         else match mode with
           | CompileOnly ->
