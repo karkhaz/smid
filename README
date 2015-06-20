@@ -41,13 +41,20 @@ Structure
 \_ state-machines ..... One state machine file for every program
 |  |_ firefox.sm
 |  \_ toaster.sm
+|  \_ ...
 |
 \_ support-files ...... Auxiliary data files for state machines. One
 |  |_ firefox           directory for every .sm file in state-machines.
 |  |  |_ urls.lines
 |  |  \_ random.lines
-|  |
+|  |  \_ ...
 |  \_ toaster
+|
+\_ tests .............. Run these with 'make test'
+|  |_ should_pass
+|  |  |_ foo.sm
+|  |  \_ ...
+|  \_ should_fail
 |
 \_ vim ................ Vim syntax highlighting files, install with
                         'make vimfiles'
