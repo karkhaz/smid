@@ -168,6 +168,12 @@ actions lined up.
 
 <h4 id="keys">keys</h4>
 
+    keys [ Ctrl+M  5  space  Return ]
+
+**Meaning:** The `keys` action causes `smid` to send keypresses to your
+application, as if the user had made those entered keypresses on the
+keyboard.
+
 **Syntax:** The keyword `keys`, followed by a space-delimited list of
 keysyms. The list is surrounded with square braces `[ ]`. 'Keysyms'
 are names for keys; a list of valid keysyms can be found
@@ -176,14 +182,6 @@ with [additional
 keysyms](http://wiki.linuxquestions.org/wiki/XF86_keyboard_symbols)
 sometimes found on laptops. Key combinations are separated using the
 plus sign `+`.
-
-**Meaning:** The `keys` action causes `smid` to send keypresses to your
-application, as if the user had made those entered keypresses on the
-keyboard.
-
-**Example:**
-
-    keys [ Ctrl+M  5  space  Return ]
 
 
 
