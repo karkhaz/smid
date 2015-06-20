@@ -48,6 +48,7 @@ type action = KeysAction of string list
             | MoveRelAction of location
             | ClickAction of (click_side * int)
             | ScrollAction of (scroll_direction * int)
+            | ShellAction of string
 
 type probability = High | Med | Low
 
@@ -145,6 +146,10 @@ let normalise frep =
                 in let new_acc = L.map (fun l ->
                   MoveAction coords :: l) acc
                 in conv_actions t new_acc
+            | FR.ShellAction str -> let new_acc = L.map (
+                fun l -> (ShellAction str) :: l
+                ) acc
+              in conv_actions t new_acc
             | FR.MoveRelAction loc ->
                 let coords = match loc with
                   | FR.Coordinates (sx, sy, ex, ey) ->
@@ -279,6 +284,8 @@ let dot_of fsa =
   in let dot_of_ts transs =
     let dot_of_t {src; acts; dst} =
       let dot_of_act = function
+        | ShellAction str ->
+            ":> " ^ str
         | ScrollAction (d, n) ->
             let dir = match d with
               | Up -> "ScrUp "
@@ -470,7 +477,9 @@ let script_of fsa run_length =
                  ^ " --repeat " ^ (string_of_int freq)
                  ^ " " ^ button
         in cmd ^ "\necho " ^ cmd ^ "\n" ^ random_delay ^ "\n"
+    in let script_of_shell str = str
     in let act_to_s  = function
+      | ShellAction str -> script_of_shell str
       | KeysAction keys -> script_of_keys keys
       | TypeAction str  -> script_of_type str
       | MoveAction (_, sx, sy, ex, ey) ->

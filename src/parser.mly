@@ -36,6 +36,7 @@
 %token <FileRep.scroll_direction * int> SCROLL
 
 %token <string> BASH_SCRIPT
+%token <string> SHELL_COMMAND
 
 %token PROB
 %token HIGH
@@ -146,6 +147,7 @@ action: key_act       { KeysAction $1     }
       | click_act     { ClickAction $1    }
       | scroll_act    { ScrollAction $1   }
       | probability   { Probability  $1   }
+      | shell_act     { ShellAction  $1   }
 
 
 key_act:      KEYPRESSES      { $1 }
@@ -153,6 +155,7 @@ type_act:     VERBATIM_STRING { $1 }
 line_act:     LINE            { $1 }
 click_act:    CLICK           { $1 }
 scroll_act:   SCROLL          { $1 }
+shell_act:    SHELL_COMMAND   { $1 }
 move_act:     MOVE            { Coordinates $1  }
 move_rel_act: MOVE_REL        { Coordinates $1  }
 move_coord:   MOVE_REGION     { Alias $1        }

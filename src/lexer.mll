@@ -72,6 +72,8 @@ rule lex = parse
  * level of an FSA file. Therefore we call into some different lexer
  * functions to return the lexemes associated with each action.*)
   | "keys"        as l { dbs "top" l lexbuf; read_keys     () lexbuf  }
+  | "shell"       as l { dbs "top" l lexbuf; read_shell    "" lexbuf  }
+  | "shel"        as l { dbs "top" l lexbuf; read_shell    "" lexbuf  }
   | "text"        as l { dbs "top" l lexbuf; read_verbatim () lexbuf  }
   | "line"        as l { dbs "top" l lexbuf; read_line () lexbuf      }
   | "move"        as l { dbs "top" l lexbuf; read_move () lexbuf      }
