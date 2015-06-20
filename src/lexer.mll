@@ -72,6 +72,8 @@ rule lex = parse
  * level of an FSA file. Therefore we call into some different lexer
  * functions to return the lexemes associated with each action.*)
   | "keys"        as l { dbs "top" l lexbuf; read_keys     () lexbuf  }
+  | "shell"       as l { dbs "top" l lexbuf; read_shell    "" lexbuf  }
+  | "shel"        as l { dbs "top" l lexbuf; read_shell    "" lexbuf  }
   | "text"        as l { dbs "top" l lexbuf; read_verbatim () lexbuf  }
   | "line"        as l { dbs "top" l lexbuf; read_line () lexbuf      }
   | "move"        as l { dbs "top" l lexbuf; read_move () lexbuf      }
@@ -130,7 +132,7 @@ and read_keys' acc = parse
   | keypress    as l { dbs "keyp" l lexbuf; read_keys' (l :: acc) lexbuf   }
 
 
-(* Rules for lexing verbatin text, invoked when we see the text keyword
+(* Rules for lexing verbatim text, invoked when we see the text keyword
  * at the top-level *)
 and read_verbatim u = parse
   | ws       {                         read_verbatim () lexbuf }
@@ -147,10 +149,22 @@ and read_verbatim' acc = parse
                   read_verbatim' (acc ^ (String.make 1 c)) lexbuf
                 }
 
+(* Rules for lexing bash, invoked when we see the shell keyword at
+ * toplevel *)
+and read_shell acc = parse
+  | '}'    as l { dbc "shell" l lexbuf; SHELL_COMMAND acc }
+  | "\\}"  as l { dbs "shell" l lexbuf; read_shell (acc ^ "}")  lexbuf }
+  | "\\n"  as l { dbs "shell" l lexbuf; read_shell (acc ^ "\n") lexbuf }
+  | "\\t"  as l { dbs "shell" l lexbuf; read_shell (acc ^ "\t") lexbuf }
+  | "\\\\" as l { dbs "shell" l lexbuf; read_shell (acc ^ "\\") lexbuf }
+  | _ as c as l { dbc "shell" l lexbuf;
+                  read_shell (acc ^ (String.make 1 c)) lexbuf
+                }
+
 (* Rules for lexing bash, invoked when we see a } at toplevel *)
 and read_bash acc = parse
   | '}'    as l { dbc "bash" l lexbuf; BASH_SCRIPT acc }
-  | "\\\"" as l { dbs "bash" l lexbuf; read_bash (acc ^ "\"") lexbuf }
+  | "\\}"  as l { dbs "bash" l lexbuf; read_bash (acc ^ "}")  lexbuf }
   | "\\n"  as l { dbs "bash" l lexbuf; read_bash (acc ^ "\n") lexbuf }
   | "\\t"  as l { dbs "bash" l lexbuf; read_bash (acc ^ "\t") lexbuf }
   | "\\\\" as l { dbs "bash" l lexbuf; read_bash (acc ^ "\\") lexbuf }
@@ -214,7 +228,10 @@ and read_move' acc = parse
 and read_move_rel u = parse
   | ws       {                      read_move_rel ()  lexbuf }
   | '(' as l { dbc "pmvr" l lexbuf; read_move_rel' [] lexbuf }
-  | nl  as l { dbc "pmvr" l lexbuf; incr_ln lexbuf; read_move_rel () lexbuf }
+  | nl  as l {
+               dbc "pmvr" l lexbuf; incr_ln lexbuf;
+               read_move_rel () lexbuf
+             }
   | _        { raise SyntaxError }
 and read_move_rel' acc = parse
   | ws                { read_move_rel' acc lexbuf }

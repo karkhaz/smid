@@ -2,3 +2,4 @@
 src/_build
 *.native
 images
+_build

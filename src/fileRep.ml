@@ -40,6 +40,7 @@ type action = KeysAction of string list
             | TypeAction of string
             | LineAction of string
             | MoveAction of location
+            | ShellAction of string
             | MoveRelAction of location
             | ClickAction of (click_side * int)
             | ScrollAction of (scroll_direction * int)

@@ -236,8 +236,10 @@ keyboard.
 
 
 
+<h4 id="shell">shell / shel</h4>
 
-
+    shell { arbitrary shell commands}
+    shel  { arbitrary shell commands}
 
 
 
