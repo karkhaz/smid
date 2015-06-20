@@ -45,13 +45,14 @@ smid: src/$(BIN)
 
 src/$(BIN): $(SRC)
 	@echo Building smid
-	@cd src && $(OCB) -cflags $(FLAGS) -r -libs $(LIBS) $(BIN)
+	@$(OCB) -cflags $(FLAGS) -r -libs $(LIBS) -I src \
+		-quiet -j 0  src/$(BIN)
 
 
-$(TMP_DIR)/%.dot: state-machines/%.sm $(wildcard support-files/%/*) smid
+$(TMP_DIR)/%.dot: state-machines/%.sm $(wildcard support-files/%/*) $(BIN)
 	@echo Generating $(notdir $@)
 	@mkdir -p $(TMP_DIR)
-	@./smid -d --include-dir support-files/$(notdir $(basename $@)) $< > $@
+	@./$(BIN) -d --include-dir support-files/$(notdir $(basename $@)) $< > $@
 
 images/%.png: $(TMP_DIR)/%.dot
 	@echo Generating $@
