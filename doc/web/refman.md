@@ -1,4 +1,4 @@
-# Reference.
+# Reference
 
 This manual describes the syntax of `.sm` files. Having a little
 experience with using the `smid` tool before reading this manual is
