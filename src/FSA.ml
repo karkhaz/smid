@@ -74,6 +74,7 @@ let error str =
     | Some file -> eprintf "%s:0:0: %s\n%!" file str
 
 (* Checks for the following conditions:
+ * - There exists at least one initial and one final state
  * - We never get to a state that is stuck
  * - No state is unreachable
  * - All states are reachable from some initial state
