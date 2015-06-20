@@ -147,10 +147,22 @@ and read_verbatim' acc = parse
                   read_verbatim' (acc ^ (String.make 1 c)) lexbuf
                 }
 
+(* Rules for lexing bash, invoked when we see the shell keyword at
+ * toplevel *)
+and read_shell acc = parse
+  | '}'    as l { dbc "shell" l lexbuf; SHELL_COMMAND acc }
+  | "\\}"  as l { dbs "shell" l lexbuf; read_shell (acc ^ "}")  lexbuf }
+  | "\\n"  as l { dbs "shell" l lexbuf; read_shell (acc ^ "\n") lexbuf }
+  | "\\t"  as l { dbs "shell" l lexbuf; read_shell (acc ^ "\t") lexbuf }
+  | "\\\\" as l { dbs "shell" l lexbuf; read_shell (acc ^ "\\") lexbuf }
+  | _ as c as l { dbc "shell" l lexbuf;
+                  read_shell (acc ^ (String.make 1 c)) lexbuf
+                }
+
 (* Rules for lexing bash, invoked when we see a } at toplevel *)
 and read_bash acc = parse
   | '}'    as l { dbc "bash" l lexbuf; BASH_SCRIPT acc }
-  | "\\\"" as l { dbs "bash" l lexbuf; read_bash (acc ^ "\"") lexbuf }
+  | "\\}"  as l { dbs "bash" l lexbuf; read_bash (acc ^ "}")  lexbuf }
   | "\\n"  as l { dbs "bash" l lexbuf; read_bash (acc ^ "\n") lexbuf }
   | "\\t"  as l { dbs "bash" l lexbuf; read_bash (acc ^ "\t") lexbuf }
   | "\\\\" as l { dbs "bash" l lexbuf; read_bash (acc ^ "\\") lexbuf }
