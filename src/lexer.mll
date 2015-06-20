@@ -126,10 +126,24 @@ and read_keys u = parse
 and read_keys' acc = parse
   | ws               {                      read_keys' acc lexbuf          }
   | "\\]"       as l { dbs "keyp" l lexbuf; read_keys' ("]" :: acc) lexbuf }
-  | nl          as l { dbc "keyp" l lexbuf; incr_ln lexbuf; read_keys' acc lexbuf }
-  | '#' line nl as l { dbs "keyp" l lexbuf; incr_ln lexbuf; read_keys' acc lexbuf }
-  | "]"         as l { dbc "keyp" l lexbuf; KEYPRESSES (acc)           }
-  | keypress    as l { dbs "keyp" l lexbuf; read_keys' (l :: acc) lexbuf   }
+  | nl          as l {
+                        dbc "keyp" l lexbuf;
+                        incr_ln lexbuf;
+                        read_keys' acc lexbuf
+                     }
+  | '#' line nl as l {
+                        dbs "keyp" l lexbuf;
+                        incr_ln lexbuf;
+                        read_keys' acc lexbuf
+                     }
+  | "]"         as l {
+                        dbc "keyp" l lexbuf;
+                        KEYPRESSES (acc)
+                     }
+  | keypress    as l {
+                        dbs "keyp" l lexbuf;
+                        read_keys' (l :: acc) lexbuf
+                     }
 
 
 (* Rules for lexing verbatim text, invoked when we see the text keyword
@@ -153,10 +167,9 @@ and read_verbatim' acc = parse
  * toplevel *)
 and read_shell acc = parse
   | '}'    as l { dbc "shell" l lexbuf; SHELL_COMMAND acc }
+  | nl     as l { dbc "shell" l lexbuf; incr_ln lexbuf;
+                                        read_shell (acc ^ "\n") lexbuf }
   | "\\}"  as l { dbs "shell" l lexbuf; read_shell (acc ^ "}")  lexbuf }
-  | "\\n"  as l { dbs "shell" l lexbuf; read_shell (acc ^ "\n") lexbuf }
-  | "\\t"  as l { dbs "shell" l lexbuf; read_shell (acc ^ "\t") lexbuf }
-  | "\\\\" as l { dbs "shell" l lexbuf; read_shell (acc ^ "\\") lexbuf }
   | _ as c as l { dbc "shell" l lexbuf;
                   read_shell (acc ^ (String.make 1 c)) lexbuf
                 }
@@ -164,10 +177,9 @@ and read_shell acc = parse
 (* Rules for lexing bash, invoked when we see a } at toplevel *)
 and read_bash acc = parse
   | '}'    as l { dbc "bash" l lexbuf; BASH_SCRIPT acc }
+  | nl     as l { dbc "bash" l lexbuf; incr_ln lexbuf;
+                                       read_bash (acc ^ "\n") lexbuf }
   | "\\}"  as l { dbs "bash" l lexbuf; read_bash (acc ^ "}")  lexbuf }
-  | "\\n"  as l { dbs "bash" l lexbuf; read_bash (acc ^ "\n") lexbuf }
-  | "\\t"  as l { dbs "bash" l lexbuf; read_bash (acc ^ "\t") lexbuf }
-  | "\\\\" as l { dbs "bash" l lexbuf; read_bash (acc ^ "\\") lexbuf }
   | _ as c as l { dbc "bash" l lexbuf;
                   read_bash (acc ^ (String.make 1 c)) lexbuf
                 }
