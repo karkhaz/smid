@@ -36,11 +36,14 @@ FLAGS=-warn-error,+A,-safe-string,-g
 SRC=$(wildcard src/*.ml) $(wildcard src/*.mll) \
 		$(wildcard src/*.mly)
 
-TARGETS=smid $(SMID_DIAGRAMS)
+TARGETS=smid $(SMID_DIAGRAMS) documentation
 
 default: $(TARGETS)
 
 smid: src/$(BIN)
+
+documentation:
+	@cd doc && make
 
 
 src/$(BIN): $(SRC)
