@@ -80,6 +80,16 @@ let is_sane fsa =
     match !Config.fsa_file with
       | None -> (* impossible *) failwith "Empty fsa file"
       | Some file -> eprintf "%s:0:0: %s\n%!" file str
+  in let inits_and_finals {inits=inits; finals=finals; _} =
+    let _inits inits =
+      if L.length inits > 0
+      then true
+      else (error (sprintf "No initial states"); false)
+    in let _finals finals =
+      if L.length finals > 0
+      then true
+      else (error (sprintf "No final states"); false)
+    in (_inits inits) && (_finals finals)
   in let never_stuck {states = states; transs = transs; finals=finals} =
     let stucks = L.filter (fun state ->
       not (L.exists (fun {src = src; _} ->
@@ -91,7 +101,7 @@ let is_sane fsa =
        ) stucks
     in L.fold_left (fun acc stuck_state ->
       error
-      (sprintf "No outgoing transitions from state <%s>\n%!" stuck_state)
+      (sprintf "No outgoing transitions from state <%s>" stuck_state)
       ; false
     ) true stucks
   in let no_unreachable {states = states; transs = transs; inits=inits} =
@@ -105,7 +115,7 @@ let is_sane fsa =
        ) unreachs
     in L.fold_left (fun acc unreach_state ->
       error
-      (sprintf "No incoming transitions to state <%s>\n%!" unreach_state)
+      (sprintf "No incoming transitions to state <%s>" unreach_state)
       ; false
     ) true unreachs
   in let all_reachable_from_init {inits=is; states=ss; transs=ts; _} =
@@ -115,7 +125,7 @@ let is_sane fsa =
       ) all
       in L.fold_left (fun acc state ->
         error (sprintf
-        "State <%s> cannot be reached from initial state\n%!" state)
+        "State <%s> cannot be reached from initial state" state)
         ; false
       ) false unreached
     in let rec all_reachable all wl transs last_size =
@@ -140,7 +150,7 @@ let is_sane fsa =
       ) all
       in L.fold_left (fun acc state ->
         error (sprintf
-        "State <%s> cannot reach any final state\n%!" state)
+        "State <%s> cannot reach any final state" state)
         ; false
       ) false unreached
     in let rec all_reachable all wl transs last_size =
@@ -158,7 +168,8 @@ let is_sane fsa =
       in all_reachable all new_wl transs (L.length wl)
     in let wl = (L.sort_uniq compare fs)
     in all_reachable ss wl ts 0
-  in (never_stuck fsa)
+  in (inits_and_finals fsa)
+  && (never_stuck fsa)
   && (no_unreachable fsa)
   && (all_reachable_from_init fsa)
   && (finals_reachable_from_all fsa)
