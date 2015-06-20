@@ -41,12 +41,12 @@ google_results --
   clik (1, left)
 --> random_page
 
-google_image_results --
-  move (150, 200, 800, 700)  # Pick a random image
-  clik (1, left)
-  move (800, 500)            # Visit page button
-  clik (1, left)
---> random_page
+# google_image_results --
+#   move (150, 200, 800, 700)  # Pick a random image
+#   clik (1, left)
+#   move (800, 500)            # Visit page button
+#   clik (1, left)
+# --> random_page
 
 random_page --
   move main_page

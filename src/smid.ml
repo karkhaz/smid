@@ -29,7 +29,6 @@ type mode = CompileOnly
           | Stats
           | Script
 
-let fsa_file = ref None
 let mode = ref None
 
 let max_depth = ref 5
@@ -73,11 +72,11 @@ and set_mode new_mode = match !mode with
   | None -> mode := Some new_mode
   | _    -> usage (speclist ()) usage_msg; exit 1
 
-let anon_fun str = match !fsa_file with
-  | None -> fsa_file := Some str; ()
+let anon_fun str = match !C.fsa_file with
+  | None -> C.fsa_file := Some str; ()
   | _    -> usage (speclist ()) usage_msg; exit 1
 
-let check_args () = match !fsa_file, !mode with
+let check_args () = match !C.fsa_file, !mode with
   | None, _
   | _, None -> usage (speclist ()) usage_msg; exit 1
   | _, _    -> ()
@@ -116,7 +115,7 @@ let get_fsa fsa_file =
 let () =
   parse (speclist ()) anon_fun usage_msg;
   Random.self_init ();
-  match !fsa_file, !mode with
+  match !C.fsa_file, !mode with
     | None, _
     | _, None -> usage (speclist ()) usage_msg; exit 1
     | Some file, Some mode    ->
@@ -124,7 +123,9 @@ let () =
         in let mode = mode
         in let fsa = get_fsa fsa_file
                   |> normalise
-        in match mode with
+        in if not (is_sane fsa)
+        then exit 1
+        else match mode with
           | CompileOnly ->
               exit 0
           | DOT ->

@@ -68,6 +68,103 @@ type fsa = {
 }
 
 
+
+(* Checks for the following conditions:
+ * - We never get to a state that is stuck
+ * - No state is unreachable
+ * - All states are reachable from some initial state
+ * - All states can reach some final state
+ *)
+let is_sane fsa =
+  let error str =
+    match !Config.fsa_file with
+      | None -> (* impossible *) failwith "Empty fsa file"
+      | Some file -> eprintf "%s:0:0: %s\n%!" file str
+  in let never_stuck {states = states; transs = transs; finals=finals} =
+    let stucks = L.filter (fun state ->
+      not (L.exists (fun {src = src; _} ->
+        state = src
+      ) transs)
+    ) states
+    in let stucks = L.filter (fun state ->
+          not (L.mem state finals)
+       ) stucks
+    in L.fold_left (fun acc stuck_state ->
+      error
+      (sprintf "No outgoing transitions from state <%s>\n%!" stuck_state)
+      ; false
+    ) true stucks
+  in let no_unreachable {states = states; transs = transs; inits=inits} =
+    let unreachs = L.filter (fun state ->
+      not (L.exists (fun {dst = dst; _} ->
+        state = dst
+      ) transs)
+    ) states
+    in let unreachs = L.filter (fun state ->
+          not (L.mem state inits)
+       ) unreachs
+    in L.fold_left (fun acc unreach_state ->
+      error
+      (sprintf "No incoming transitions to state <%s>\n%!" unreach_state)
+      ; false
+    ) true unreachs
+  in let all_reachable_from_init {inits=is; states=ss; transs=ts; _} =
+    let report_error all reached =
+      let unreached = L.filter (fun state ->
+        not (L.mem state reached)
+      ) all
+      in L.fold_left (fun acc state ->
+        error (sprintf
+        "State <%s> cannot be reached from initial state\n%!" state)
+        ; false
+      ) false unreached
+    in let rec all_reachable all wl transs last_size =
+      if last_size = L.length wl
+      then report_error all wl
+      else if all = wl
+      then true
+      else let nexts =
+        L.map (fun {dst=dst;_} -> dst) (
+          L.filter (fun {src=src;_} ->
+            L.mem src wl
+          ) transs
+        )
+      in let new_wl = (L.sort_uniq compare (nexts @ wl))
+      in all_reachable all new_wl transs (L.length wl)
+    in let wl = (L.sort_uniq compare is)
+    in all_reachable ss wl ts 0
+  in let finals_reachable_from_all {finals=fs; states=ss; transs=ts; _} =
+    let report_error all reached =
+      let unreached = L.filter (fun state ->
+        not (L.mem state reached)
+      ) all
+      in L.fold_left (fun acc state ->
+        error (sprintf
+        "State <%s> cannot reach any final state\n%!" state)
+        ; false
+      ) false unreached
+    in let rec all_reachable all wl transs last_size =
+      if last_size = L.length wl
+      then report_error all wl
+      else if all = wl
+      then true
+      else let priors =
+        L.map (fun {src=src;_} -> src) (
+          L.filter (fun {dst=dst;_} ->
+            L.mem dst wl
+          ) transs
+        )
+      in let new_wl = (L.sort_uniq compare (priors @ wl))
+      in all_reachable all new_wl transs (L.length wl)
+    in let wl = (L.sort_uniq compare fs)
+    in all_reachable ss wl ts 0
+  in (never_stuck fsa)
+  && (no_unreachable fsa)
+  && (all_reachable_from_init fsa)
+  && (finals_reachable_from_all fsa)
+
+
+
 (* Turn a FileRep.fsa into an fsa *)
 let normalise frep =
   let coords_from_alias alias =

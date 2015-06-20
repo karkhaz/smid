@@ -24,3 +24,5 @@ let loops = ref true
 let run_length = ref 200
 
 let include_dir = ref "."
+
+let fsa_file : string option ref  = ref None
