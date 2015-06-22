@@ -12,6 +12,7 @@ Dependencies
 ------------
 
 * OCaml >= 4.02
+* The findlib and yojson libraries for OCaml
 * make
 * Graphviz (for visualising state machines)
 * xdotool  (for autonomously driving applications)

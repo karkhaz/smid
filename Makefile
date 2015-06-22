@@ -22,6 +22,8 @@ XDOTOOL=xdotool
 AWK=awk
 OCB=ocamlbuild
 OCO=ocamlopt
+OCF=ocamlfind
+OPAM=opam
 
 SMID_FILES=$(wildcard state-machines/*.sm)
 SMID_DIAGRAMS=$(patsubst state-machines/%.sm,images/%.png,$(SMID_FILES))
@@ -31,10 +33,11 @@ TMP_DIR=/tmp/smid
 BIN=smid.native
 
 LIBS=unix,str
-FLAGS=-safe-string,-g
+CFLAGS=-safe-string,-g,-warn-error,+A
+FLAGS=-ocamlopt '$(OCF) $(OCO)' -quiet -r -j 0 -I src \
+			-libs $(LIBS) -cflags $(CFLAGS)
 
-SRC=$(wildcard src/*.ml) $(wildcard src/*.mll) \
-		$(wildcard src/*.mly)
+SRC=$(wildcard src/*.ml) $(wildcard src/*.mll) $(wildcard src/*.mly)
 
 TARGETS=smid $(SMID_DIAGRAMS) documentation
 
@@ -48,8 +51,7 @@ documentation:
 
 src/$(BIN): $(SRC)
 	@echo Building smid
-	@$(OCB) -cflags $(FLAGS) -r -libs $(LIBS) -I src \
-		-quiet -j 0  src/$(BIN)
+	@$(OCB) $(FLAGS) src/$(BIN)
 
 
 $(TMP_DIR)/%.dot: state-machines/%.sm $(wildcard support-files/%/*) $(BIN)
@@ -78,13 +80,19 @@ vimfiles: $(wildcard vim/*/*)
 
 .PHONY: check
 check:
+	@which $(AWK)
 	@which $(DOT)
 	@which $(XDOTOOL)
 	@which $(OCB)
 	@which $(OCO)
-	@which $(AWK)
+	@which $(OPAM)
+	@which $(OCF)
 	@echo -n "OCaml version " && $(OCO) -version
 	@test `$(OCO) -version | $(AWK) -F . '{print $$1 $$2}'` -ge 402
+	@echo -n "yojson version: "
+	@$(OPAM) list | $(AWK) '{print $$1}' | grep yojson > /dev/null \
+		&& $(OPAM) info yojson | grep installed-version | $(AWK) '{print $$2}' \
+		|| (echo NOT INSTALLED && exit 1)
 
 
 # Tests ==============================================================
