@@ -32,10 +32,9 @@ TMP_DIR=/tmp/smid
 BIN=smid.native
 
 LIBS=unix,str
-CFLAGS=-I,~/.opam/system/lib/yojson,-safe-string,-g,-warn-error,+A
-LFLAGS=-I,~/.opam/system/lib/yojson
+CFLAGS=-safe-string,-g,-warn-error,+A
 FLAGS= -quiet -r -j 0 -I src -use-ocamlfind \
-			 -cflags $(CFLAGS) -lflags $(LFLAGS) -libs $(LIBS)
+			 -cflags $(CFLAGS) -libs $(LIBS)
 
 SRC=$(wildcard src/*.ml) $(wildcard src/*.mll) $(wildcard src/*.mly)
 
