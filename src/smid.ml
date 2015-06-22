@@ -28,7 +28,7 @@ type mode = CompileOnly
           | DOT
           | Stats
           | Script
-          | PrintRun
+          | JSON
 
 let mode = ref None
 
@@ -54,11 +54,11 @@ let rec _speclist = [
   ("-r", Unit (function () -> set_mode Script),
    " Generate run script")
   ;
+  ("-j", Unit (function () -> set_mode JSON),
+   " Print out a single JSON-formatted run")
+  ;
   ("-s", Unit (function () -> set_mode Stats),
    " Print out SM statistics")
-  ;
-  ("-j", Unit (function () -> set_mode PrintRun),
-   " Print out JSON")
   ;
   ("--loops", Unit (function () -> C.loops := false),
    " With -d, make transitions to the same state loop back on themselves")
@@ -151,6 +151,6 @@ let () =
           | Script ->
               printf "%s" (script_of fsa !C.run_length)
             ; exit 0
-          | PrintRun ->
+          | JSON ->
               printf "%s" (Run.to_json (Run.run_of fsa !C.run_length))
             ; exit 0

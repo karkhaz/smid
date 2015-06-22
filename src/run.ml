@@ -152,20 +152,18 @@ let run_of fsa run_length =
           in let new_acc = L.append actions acc
           in to_actions t new_acc
     in to_actions transs []
-  in let {F.inits; _} = fsa
-  in let initial = U.random_from_list inits
-  in let transitions = build_run initial run_length []
-  in let actions = to_actions transitions
-  in let drop_3 lst =
+  in let drop_last_3 lst =
     let rec drop_3 lst acc =
       match lst with
         | [_;_;_] -> acc
         | h :: t  -> drop_3 t (h :: acc)
         | [] -> (* impossible *) failwith "Empty run"
     in L.rev (drop_3 lst [])
-  in drop_3 actions
-
-
+  in let {F.inits; _} = fsa
+  in let initial = U.random_from_list inits
+  in let transitions = build_run initial run_length []
+  in let actions = to_actions transitions
+  in drop_last_3 actions (* drop transition to __fake_state & delays *)
 
 
 
