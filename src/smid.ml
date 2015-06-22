@@ -92,7 +92,16 @@ let check_args () = match !C.fsa_file, !mode with
   | _, _    -> ()
 
 let get_fsa fsa_file =
-  try
+  let error fmt lexbuf =
+    let lexeme = Lexing.lexeme lexbuf
+    in let line = lexbuf.Lexing.lex_curr_p.pos_lnum
+    in let c2bol = lexbuf.Lexing.lex_curr_p.pos_bol
+    in let c2cur = lexbuf.Lexing.lex_curr_p.pos_cnum
+    in let chr = c2cur - c2bol
+    in let msg = sprintf fmt fsa_file line chr lexeme
+    in eprintf "%s\n" msg
+     ; exit 1
+  in try
     let in_chan = open_in fsa_file
     in let lexbuf = Lexing.from_channel in_chan
     in try
@@ -100,16 +109,13 @@ let get_fsa fsa_file =
     with
       | Parsing.Parse_error
       | Lexer.SyntaxError ->
-          let lexeme = Lexing.lexeme lexbuf
-          in let msg =
+          let fmt =
             format_of_string "%s:%d:%d: Unexpected token <%s>"
-          in let line = lexbuf.Lexing.lex_curr_p.pos_lnum
-          in let c2bol = lexbuf.Lexing.lex_curr_p.pos_bol
-          in let c2cur = lexbuf.Lexing.lex_curr_p.pos_cnum
-          in let chr = c2cur - c2bol
-          in let msg = sprintf msg fsa_file line chr lexeme
-          in eprintf "%s\n" msg
-           ; exit 1
+          in error fmt lexbuf
+      | Lexer.KeystrokeError ->
+          let fmt =
+            format_of_string "%s:%d:%d: Invalid keystroke <%s>"
+          in error fmt lexbuf
       | Failure fail ->
           let msg =
             format_of_string "%s:%d:0: <%s>"

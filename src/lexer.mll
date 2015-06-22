@@ -51,6 +51,8 @@
     in dbs mode str lexbuf
 
   exception SyntaxError
+
+  exception KeystrokeError
 }
 
 let ws       = [  ' '  '\t' ]*
@@ -141,8 +143,25 @@ and read_keys' acc = parse
                         KEYPRESSES (acc)
                      }
   | keypress    as l {
-                        dbs "keyp" l lexbuf;
-                        read_keys' (l :: acc) lexbuf
+      dbs "keyp" l lexbuf;
+      match (Keysyms.valid l), !Config.fsa_file with
+        | Keysyms.Valid, _ -> read_keys' (l :: acc) lexbuf
+        | Keysyms.Corrected str, Some file ->
+            let open Lexing in
+            let lexeme = Lexing.lexeme lexbuf
+            in let msg =
+              format_of_string "%s:%d:%d: Corrected keystroke <%s> to <%s>"
+            in let line = lexbuf.Lexing.lex_curr_p.pos_lnum
+            in let c2bol = lexbuf.Lexing.lex_curr_p.pos_bol
+            in let c2cur = lexbuf.Lexing.lex_curr_p.pos_cnum
+            in let chr = c2cur - c2bol
+            in let msg = sprintf msg file line chr lexeme str
+            in eprintf "%s\n" msg;
+            read_keys' (str :: acc) lexbuf
+        | Keysyms.Invalid, _ ->
+            raise KeystrokeError
+        | _, _ -> (* Impossible for there to be no fsa file
+                   *) failwith "No fsa file"
                      }
 
 
