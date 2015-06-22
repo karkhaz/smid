@@ -125,9 +125,9 @@ let run_of fsa run_length =
         then actions
         else HookAction (L.hd hooks) :: actions
       in let add_actions fsa_acts run_acts =
-        L.fold_right (fun fsa_act run_acts ->
+        L.fold_left (fun run_acts fsa_act ->
           let fsa_act = match fsa_act with
-            | F.KeysAction keys -> KeysAction keys
+            | F.KeysAction keys -> KeysAction (L.rev keys)
             | F.TypeAction {F.fname;F.text} ->
                 TypeAction {fname;    text}
             | F.MoveAction (r,sx,sy,ex,ey) ->
@@ -140,7 +140,7 @@ let run_of fsa run_length =
             | F.ScrollAction (F.Down, i) -> ScrollAction (Down, i)
             | F.ShellAction s -> ShellAction s
           in fsa_act :: run_acts
-        ) fsa_acts run_acts
+        ) run_acts fsa_acts
       in match transs with
         | [] -> acc
         | {F.src;F.acts;F.dst;_} :: t -> let actions = []
