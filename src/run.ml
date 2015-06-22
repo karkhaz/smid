@@ -289,3 +289,13 @@ let to_json run =
   in let lst = `List (L.map (fun act -> to_json act) run)
   in let json = `Assoc [("actions", lst)]
   in J.pretty_to_string json
+
+
+
+let to_script run = ""
+
+
+
+type result = Success | Fail
+
+let execute run = Success

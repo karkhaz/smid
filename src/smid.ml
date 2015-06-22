@@ -29,6 +29,7 @@ type mode = CompileOnly
           | Stats
           | Script
           | JSON
+          | Execute
 
 let mode = ref None
 
@@ -154,9 +155,21 @@ let () =
           | Stats ->
               printf "%s" (stats_of fsa)
             ; exit 0
-          | Script ->
-              printf "%s" (script_of fsa !C.run_length)
-            ; exit 0
-          | JSON ->
-              printf "%s" (Run.to_json (Run.run_of fsa !C.run_length))
-            ; exit 0
+          | Script | JSON | Execute ->
+              let open Run
+              in let run = run_of fsa !C.run_length
+              in match mode with
+                | Script ->
+                    printf "%s" (to_script run)
+                    ; exit 0
+                | JSON ->
+                    printf "%s" (to_json run)
+                    ; exit 0
+                | Execute ->
+                    let result = execute run
+                    in (match result with
+                      | Success -> exit 0
+                      | Fail -> exit 1
+                    )
+                | _ -> (* impossible, dealt with other cases above *)
+                        failwith "Impossible case"
