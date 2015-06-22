@@ -40,6 +40,7 @@ let usage_msg =
 "Usage: smid -c [OPTION...] SM_FILE
        smid -d [OPTION...] SM_FILE
        smid -r [OPTION...] SM_FILE
+       smid -j [OPTION...] SM_FILE
        smid -s [OPTION...] SM_FILE
 "
 
@@ -55,6 +56,9 @@ let rec _speclist = [
   ;
   ("-s", Unit (function () -> set_mode Stats),
    " Print out SM statistics")
+  ;
+  ("-j", Unit (function () -> set_mode PrintRun),
+   " Print out JSON")
   ;
   ("--loops", Unit (function () -> C.loops := false),
    " With -d, make transitions to the same state loop back on themselves")
@@ -148,5 +152,5 @@ let () =
               printf "%s" (script_of fsa !C.run_length)
             ; exit 0
           | PrintRun ->
-              ignore (Run.run_of fsa !C.run_length)
+              printf "%s" (Run.to_json (Run.run_of fsa !C.run_length))
             ; exit 0

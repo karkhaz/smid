@@ -1,4 +1,4 @@
-(* Program run
+(* Program run derived from FSA
  * Copyright (C) 2015 Kareem Khazem
  *
  * This file is part of smid.
@@ -24,6 +24,7 @@ module L = List
 module C = Config
 module U = Util
 module TR = TRList
+module J = Yojson
 open Printf
 
 type _state_hook = { state: string; hook: string; }
@@ -154,4 +155,119 @@ let run_of fsa run_length =
   in let {F.inits; _} = fsa
   in let initial = U.random_from_list inits
   in let transitions = build_run initial run_length []
-  in to_actions transitions
+  in let actions = to_actions transitions
+  in let drop_3 lst =
+    let rec drop_3 lst acc =
+      match lst with
+        | [_;_;_] -> acc
+        | h :: t  -> drop_3 t (h :: acc)
+        | [] -> (* impossible *) failwith "Empty run"
+    in L.rev (drop_3 lst [])
+  in drop_3 actions
+
+
+
+
+
+let to_json run =
+  let to_json = function
+    | KeysAction keys ->
+        let head = ("type", `String "keys")
+        in let keys = `List (L.map (fun key -> `String key) keys)
+        in let body = ("body", keys)
+        in `Assoc [head; body]
+    | TypeAction {fname; text} ->
+        let head = ("type", `String "type")
+        in let fname = match fname with
+          | Some f -> `String f
+          | None   -> `Null
+        in let body = `Assoc [
+          ("text", `String text);
+          ("file", fname)
+        ]
+        in let body = ("body", body)
+        in `Assoc [head; body]
+    | MoveAction (r, sx, sy, ex, ey) ->
+        let head = ("type", `String "move")
+        in let region = match r with
+          | Some r -> `String r
+          | None -> `Null
+        in let body = `Assoc [
+          ("region",   region);
+          ("start-x", `Int sx);
+          ("end-x",   `Int ex);
+          ("start-y", `Int sy);
+          ("end-y",   `Int ey)
+        ]
+        in let body = ("body", body)
+        in `Assoc [head; body]
+    | MoveRelAction (r, sx, sy, ex, ey) ->
+        let head = ("type", `String "move_rel")
+        in let region = match r with
+          | Some r -> `String r
+          | None -> `Null
+        in let body = `Assoc [
+          ("region",   region);
+          ("start-x", `Int sx);
+          ("end-x",   `Int ex);
+          ("start-y", `Int sy);
+          ("end-y",   `Int ey)
+        ]
+        in let body = ("body", body)
+        in `Assoc [head; body]
+    | ClickAction (side, freq) ->
+        let head = ("type", `String "click")
+        in let side = match side with
+          | Left  -> `String "left"
+          | Right -> `String "right"
+        in let body = `Assoc [
+          ("side", side);
+          ("frequency", `Int freq)
+        ]
+        in let body = ("body", body)
+        in `Assoc [head; body]
+    | ScrollAction (dir, dist) ->
+        let head = ("type", `String "scroll")
+        in let dir = match dir with
+          | Up   -> `String "up"
+          | Down -> `String "down"
+        in let body = `Assoc [
+          ("dir", dir);
+          ("distance", `Int dist)
+        ]
+        in let body = ("body", body)
+        in `Assoc [head; body]
+    | ShellAction cmd ->
+        let head = ("type", `String "shell")
+        in let body = `String cmd
+        in let body = ("body", body)
+        in `Assoc [head; body]
+    | HookAction h ->
+        let head = ("type", `String "hook")
+        in let position, state, hook = match h with
+          | Pre  {state; hook} -> "pre",  state, hook
+          | Post {state; hook} -> "post", state, hook
+        in let body = `Assoc [
+          ("position", `String position);
+          ("state",    `String state);
+          ("hook",     `String hook)
+        ]
+        in let body = ("body", body)
+        in `Assoc [head; body]
+    | StateChangeAction {src; dst} ->
+        let head = ("type", `String "state")
+        in let body = `Assoc [
+          ("from", `String src);
+          ("to",   `String dst)
+        ]
+        in let body = ("body", body)
+        in `Assoc [head; body]
+    | DelayAction d ->
+        let head = ("type", `String "delay")
+        in let body = `Float d
+        in let body = ("body", body)
+        in `Assoc [head; body]
+    | _ -> `Null
+  in let lst = `List (L.map (fun act -> to_json act) run)
+  in let json = `Assoc [("actions", lst)]
+  in J.pretty_to_string json
