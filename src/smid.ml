@@ -28,6 +28,7 @@ type mode = CompileOnly
           | DOT
           | Stats
           | Script
+          | PrintRun
 
 let mode = ref None
 
@@ -145,4 +146,7 @@ let () =
             ; exit 0
           | Script ->
               printf "%s" (script_of fsa !C.run_length)
+            ; exit 0
+          | PrintRun ->
+              ignore (Run.run_of fsa !C.run_length)
             ; exit 0

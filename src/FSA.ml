@@ -50,6 +50,9 @@ type action = KeysAction of string list
             | ScrollAction of (scroll_direction * int)
             | ShellAction of string
 
+type run = action list
+
+
 type probability = High | Med | Low
 
 type trans = {

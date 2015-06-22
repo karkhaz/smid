@@ -31,7 +31,7 @@ TMP_DIR=/tmp/smid
 BIN=smid.native
 
 LIBS=unix,str
-FLAGS=-warn-error,+A,-safe-string,-g
+FLAGS=-safe-string,-g
 
 SRC=$(wildcard src/*.ml) $(wildcard src/*.mll) \
 		$(wildcard src/*.mly)
