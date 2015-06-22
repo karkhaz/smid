@@ -57,7 +57,7 @@ let run_of fsa run_length =
   let get_nexts source =
     L.filter (fun {F.src; _} -> src = source) fsa.F.transs
   in let filter_by_probability outs =
-    let highs = L.filter (fun {F.prob; _} -> prob = F.High) outs
+    let highs =   L.filter (fun {F.prob; _} -> prob = F.High) outs
     in let meds = L.filter (fun {F.prob; _} -> prob = F.Med) outs
     in let lows = L.filter (fun {F.prob; _} -> prob = F.Low) outs
     in let lst = [lows;meds;highs]
@@ -99,7 +99,9 @@ let run_of fsa run_length =
                   |> U.random_from_list
                   in trans :: acc
           )
-      | n -> let trans = nexts
+      | n ->
+          let trans = nexts
+          |> L.filter (fun trans -> not (goes_to_final trans))
           |> filter_by_probability
           |> U.random_from_list
           in let new_acc = trans :: acc
