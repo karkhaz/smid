@@ -45,6 +45,8 @@ type location = {
   ey: int;
 }
 
+type debug_info = (string * string)
+
 type action = KeysAction of string list
             | TypeAction of type_action
             | MoveAction of location
@@ -55,7 +57,8 @@ type action = KeysAction of string list
             | HookAction of state_hook
             | StateChangeAction of state_change
             | DelayAction of float
-            | DebugAction of string
+              (** List of key * value pairs *)
+            | DebugAction of debug_info list
             | PrintAction of string
 
 type run = action list
@@ -271,7 +274,18 @@ let to_json run =
         in let body = `Float d
         in let body = ("body", body)
         in `Assoc [head; body]
-    | _ -> `Null
+    | PrintAction str ->
+        let head = ("type", `String "print")
+        in let body = `String str
+        in let body = ("body", body)
+        in `Assoc [head; body]
+    | DebugAction lst ->
+        let head = ("type", `String "debug")
+        in let body = `Assoc (L.map (fun (k, v) ->
+          k, `String v
+        ) lst)
+        in let body = ("body", body)
+        in `Assoc [head; body]
   in let lst = `List (L.map (fun act -> to_json act) run)
   in let json = `Assoc [("actions", lst)]
   in J.pretty_to_string json
