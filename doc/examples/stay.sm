@@ -1,5 +1,5 @@
-foo bar baz -- keys [ Ctrl-R ] --> stay
+foo bar baz -- keys [ Control+R ] --> stay
 
-foo -- keys [ Ctrl-R ] --> foo
-bar -- keys [ Ctrl-R ] --> bar
-baz -- keys [ Ctrl-R ] --> baz
+foo -- keys [ Control+R ] --> foo
+bar -- keys [ Control+R ] --> bar
+baz -- keys [ Control+R ] --> baz

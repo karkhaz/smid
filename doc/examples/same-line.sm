@@ -1,5 +1,5 @@
-foo bar baz -- keys [ Ctrl+Q ] --> quit
+foo bar baz -- keys [ Control+Q ] --> quit
 
-foo -- keys [ Ctrl+Q ] --> quit
-bar -- keys [ Ctrl+Q ] --> quit
-baz -- keys [ Ctrl+Q ] --> quit
+foo -- keys [ Control+Q ] --> quit
+bar -- keys [ Control+Q ] --> quit
+baz -- keys [ Control+Q ] --> quit

@@ -16,5 +16,5 @@ examples/%.png: examples/%.dot
 examples/%.dot: examples/%.tmp.dot dot_formatter.rb
 	@cat $< | ./dot_formatter.rb > $@
 
-examples/%.tmp.dot: examples/%.sm
+examples/%.tmp.dot: examples/%.sm ../smid
 	@../smid --no-sanity-check --loops -d $< > $@
