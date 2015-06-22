@@ -40,7 +40,13 @@ type type_action = {
 type click_side = Left | Right
 type scroll_direction = Up | Down
 
-type location = (string option * int * int * int * int)
+type location = {
+  region: string option;
+  sx: int;
+  sy: int;
+  ex: int;
+  ey: int;
+}
 
 type action = KeysAction of string list
             | TypeAction of type_action
@@ -251,10 +257,10 @@ let normalise frep =
             | FR.MoveAction loc ->
                 let coords = match loc with
                   | FR.Coordinates (sx, sy, ex, ey) ->
-                      (None, sx, sy, ex, ey)
+                      {region=None; sx; sy; ex; ey}
                   | FR.Alias s ->
                       let sx, sy, ex, ey = coords_from_alias s
-                      in (Some s, sx, sy, ex, ey)
+                      in {region = Some s; sx; sy; ex; ey}
                 in let new_acc = L.map (fun l ->
                   MoveAction coords :: l) acc
                 in conv_actions t new_acc
@@ -265,10 +271,10 @@ let normalise frep =
             | FR.MoveRelAction loc ->
                 let coords = match loc with
                   | FR.Coordinates (sx, sy, ex, ey) ->
-                      (None, sx, sy, ex, ey)
+                      {region=None; sx; sy; ex; ey}
                   | FR.Alias s ->
                       let sx, sy, ex, ey = coords_from_alias s
-                      in (Some s, sx, sy, ex, ey)
+                      in {region = Some s; sx; sy; ex; ey}
                 in let new_acc = L.map (fun l ->
                   MoveRelAction coords :: l) acc
                 in conv_actions t new_acc
@@ -403,12 +409,12 @@ let dot_of fsa =
               | Up -> "ScrUp "
               | Down -> "ScrDown "
             in dir ^ "x" ^ (string_of_int n)
-        | MoveAction (r, sx, sy, ex, ey) -> (
-            match r with
+        | MoveAction {region; sx; sy; ex; ey} -> (
+            match region with
               | None -> "move " ^ string_of_coords sx sy ex ey
               | Some region -> "move to '" ^ region ^ "'"
         )
-        | MoveRelAction (_, sx, sy, ex, ey) ->
+        | MoveRelAction {sx; sy; ex; ey; _} ->
             "rel-move " ^ string_of_coords sx sy ex ey
         | ClickAction (side, freq) ->
             let side =
@@ -596,9 +602,9 @@ let script_of fsa run_length =
       | ShellAction str -> script_of_shell str
       | KeysAction keys -> script_of_keys keys
       | TypeAction str  -> script_of_type str
-      | MoveAction (_, sx, sy, ex, ey) ->
+      | MoveAction {sx; sy; ex; ey; _} ->
           script_of_move sx sy ex ey
-      | MoveRelAction (_, sx, sy, ex, ey) ->
+      | MoveRelAction {sx; sy; ex; ey; _} ->
           script_of_move_rel sx sy ex ey
       | ClickAction (side, freq)  -> script_of_click side freq
       | ScrollAction (dir, freq)  -> script_of_scroll dir freq

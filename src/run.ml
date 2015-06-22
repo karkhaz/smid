@@ -37,7 +37,13 @@ type state_change = { src: string; dst: string; }
 type click_side = Left | Right
 type scroll_direction = Up | Down
 
-type location = (string option * int * int * int * int)
+type location = {
+  region: string option;
+  sx: int;
+  sy: int;
+  ex: int;
+  ey: int;
+}
 
 type action = KeysAction of string list
             | TypeAction of type_action
@@ -130,10 +136,10 @@ let run_of fsa run_length =
             | F.KeysAction keys -> KeysAction (L.rev keys)
             | F.TypeAction {F.fname;F.text} ->
                 TypeAction {fname;    text}
-            | F.MoveAction (r,sx,sy,ex,ey) ->
-                MoveAction (r,sx,sy,ex,ey)
-            | F.MoveRelAction (r,sx,sy,ex,ey) ->
-                MoveRelAction (r,sx,sy,ex,ey)
+            | F.MoveAction {F.region;F.sx;F.sy;F.ex;F.ey} ->
+                MoveAction {region;sx;sy;ex;ey}
+            | F.MoveRelAction {F.region;F.sx;F.sy;F.ex;F.ey} ->
+                MoveRelAction {region;sx;sy;ex;ey}
             | F.ClickAction (F.Left,  i) -> ClickAction (Left,  i)
             | F.ClickAction (F.Right, i) -> ClickAction (Right, i)
             | F.ScrollAction (F.Up,   i) -> ScrollAction (Up,   i)
@@ -185,11 +191,11 @@ let to_json run =
         ]
         in let body = ("body", body)
         in `Assoc [head; body]
-    | MoveAction (r, sx, sy, ex, ey) ->
+    | MoveAction {region; sx; sy; ex; ey} ->
         let head = ("type", `String "move")
-        in let region = match r with
+        in let region = match region with
           | Some r -> `String r
-          | None -> `Null
+          | None ->   `Null
         in let body = `Assoc [
           ("region",   region);
           ("start-x", `Int sx);
@@ -199,9 +205,9 @@ let to_json run =
         ]
         in let body = ("body", body)
         in `Assoc [head; body]
-    | MoveRelAction (r, sx, sy, ex, ey) ->
+    | MoveRelAction {region; sx; sy; ex; ey} ->
         let head = ("type", `String "move_rel")
-        in let region = match r with
+        in let region = match region with
           | Some r -> `String r
           | None -> `Null
         in let body = `Assoc [
