@@ -18,14 +18,6 @@
  *)
 
 
-module FR = FileRep
-module S = String
-module L = List
-module C = Config
-module U = Util
-module TR = TRList
-open Printf
-
 type state = string
 type hook = string
 type _state_hook = (state * hook)
