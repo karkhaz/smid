@@ -21,6 +21,7 @@ DOT=circo
 XDOTOOL=xdotool
 AWK=awk
 OCB=ocamlbuild
+OCF=ocamlfind
 OCO=ocamlopt
 OPAM=opam
 
