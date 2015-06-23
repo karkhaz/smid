@@ -177,8 +177,9 @@ let run_of fsa run_length =
 
 
 
-let to_json run =
-  let to_json = function
+let to_json fsa run_length =
+  let run = run_of fsa run_length
+  in let to_json = function
     | KeyAction key ->
         let head = ("type", `String "key")
         in let key = `String key
@@ -281,14 +282,30 @@ let to_json run =
 
 
 
+(* The commands that _must_ be sent to an external shell in order to
+ * perform an action. Notice that some things can be done internally
+ * by smid, such as printing statuses or waiting for delays. These
+ * things get handled individually in to_script or execute, not here.
+ *)
+let command_of = function
+    | KeyAction key -> ""
+    | TypeAction {text; _} -> ""
+    | MoveAction {sx;sy;ex;ey;_} -> ""
+    | MoveRelAction {sx;sy;ex;ey;_} -> ""
+    | ClickAction (side, freq) -> ""
+    | ScrollAction (dir, dist) -> ""
+    | ShellAction cmd -> cmd
+    | HookAction Pre  {hook; _} -> hook
+    | HookAction Post {hook; _} -> hook
+    | StateChangeAction _ -> ""
+    | DelayAction _ -> ""
 
 
 
-
-let to_script run = ""
+let to_script fsa run_length = ""
 
 
 
 type result = Success | Fail
 
-let execute run = Success
+let execute fsa run_length = Success
