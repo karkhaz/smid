@@ -18,12 +18,9 @@
  *)
 
 
-module F = FSA
 module S = String
 module L = List
 module U = Util
-module TR = TRList
-module J = Yojson
 open Printf
 
 type _state_hook = { state: string; hook: string; }
@@ -58,7 +55,8 @@ type action = KeyAction of string
 type run = action list
 
 let run_of fsa run_length =
-  let get_nexts source =
+  let module F = FSA
+  in let get_nexts source =
     L.filter (fun {F.src; _} -> src = source) fsa.F.transs
   in let filter_by_probability outs =
     let highs =   L.filter (fun {F.prob; _} -> prob = F.High) outs
@@ -191,7 +189,8 @@ let run_of fsa run_length =
 
 
 let to_json fsa run_length =
-  let run = run_of fsa run_length
+  let module J = Yojson
+  in let run = run_of fsa run_length
   in let to_json = function
     | KeyAction key ->
         let head = ("type", `String "key")
