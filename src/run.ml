@@ -294,13 +294,29 @@ let to_json fsa run_length =
  * by smid, such as printing statuses or waiting for delays. These
  * things get handled individually in to_script or execute, not here.
  *)
-let command_of = function
-    | KeyAction key -> ""
-    | TypeAction {text; _} -> ""
-    | MoveAction {sx;sy;ex;ey;_} -> ""
-    | MoveRelAction {sx;sy;ex;ey;_} -> ""
-    | ClickAction (side, freq) -> ""
-    | ScrollAction (dir, dist) -> ""
+let command_of action =
+  let xsearch = "xdotool search --name \"$WINDOW_NAME\" "
+  in match action with
+    | KeyAction key ->
+        xsearch ^ "key --window %1 \""  ^ key  ^ "\""
+    | TypeAction {text; _} ->
+        xsearch ^ "type --window %1 \"" ^ text ^ "\""
+    | MoveAction {x;y;_} ->
+        xsearch ^ "mousemove --window %1 --clearmodifiers --sync "
+        ^  string_of_int x  ^  " "  ^  string_of_int y
+    | MoveRelAction {x;y;_} ->
+        xsearch ^ "mousemove_relative --window %1 --clearmodifiers "
+        ^ "--sync " ^  string_of_int x  ^  " "  ^  string_of_int y
+    | ClickAction (side, freq) -> let button = (match side with
+        | Left -> "1"
+        | Right -> "3"
+      ) in xsearch ^ "click --clearmodifiers --repeat "
+      ^ string_of_int freq  ^ " " ^ button
+    | ScrollAction (dir, dist) -> let button = (match dir with
+        | Up -> "4"
+        | Down -> "5"
+      ) in xsearch ^ "click --clearmodifiers --repeat "
+      ^ string_of_int dist  ^ " " ^ button
     | ShellAction cmd -> cmd
     | HookAction Pre  {hook; _} -> hook
     | HookAction Post {hook; _} -> hook
