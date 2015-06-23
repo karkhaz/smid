@@ -51,6 +51,7 @@ type action = KeysAction of string list
             | ClickAction of (click_side * int)
             | ScrollAction of (scroll_direction * int)
             | ShellAction of string
+            | WindowChange of string
 
 type pre_post = Pre | Post
 type hook = (pre_post * state * action list)
@@ -237,6 +238,10 @@ let normalise frep =
       | [] -> acc
       | act :: t -> (
         match act with
+          | FR.WindowChange win -> let new_acc = L.map (
+              fun lst -> WindowChange win :: lst
+            ) acc
+            in conv_actions t new_acc
           | FR.Probability _ -> conv_actions t acc
           | FR.MoveAction loc ->
               let coords = match loc with
@@ -410,6 +415,7 @@ let dot_of fsa =
   in let dot_of_ts transs =
     let dot_of_t {src; acts; dst} =
       let dot_of_act = function
+        | WindowChange _ -> ""
         | ShellAction str ->
             ":> " ^ str
         | ScrollAction (d, n) ->

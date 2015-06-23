@@ -43,6 +43,7 @@ type action = KeysAction of string list
             | ClickAction of (click_side * int)
             | ScrollAction of (scroll_direction * int)
             | ShellAction of string
+            | WindowChange of string
 
 type pre_post = Pre | Post
 type hook = (pre_post * state * action list)

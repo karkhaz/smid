@@ -35,7 +35,7 @@
 %token <FileRep.click_side * int> CLICK
 %token <FileRep.scroll_direction * int> SCROLL
 
-%token <string> BASH_SCRIPT
+%token <string> WINDOW_CHANGE
 %token <string> SHELL_COMMAND
 
 %token PROB
@@ -147,6 +147,7 @@ action: key_act       { KeysAction $1     }
       | scroll_act    { ScrollAction $1   }
       | probability   { Probability  $1   }
       | shell_act     { ShellAction  $1   }
+      | window_change { WindowChange $1   }
 
 
 key_act:      KEYPRESSES      { $1 }
@@ -158,6 +159,7 @@ shell_act:    SHELL_COMMAND   { $1 }
 move_act:     MOVE            { Coordinates $1  }
 move_rel_act: MOVE_REL        { Coordinates $1  }
 move_coord:   MOVE_REGION     { Alias $1        }
+window_change:WINDOW_CHANGE   { $1              }
 
 probability:  PROB prob { $2  }
         prob: HIGH      { High}

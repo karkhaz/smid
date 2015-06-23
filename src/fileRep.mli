@@ -39,6 +39,7 @@ type action = KeysAction of string list
             | ClickAction of (click_side * int)
             | ScrollAction of (scroll_direction * int)
             | Probability of probability
+            | WindowChange of string
 
 type dest_state = DestState of string
                 | Stay

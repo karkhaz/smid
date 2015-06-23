@@ -50,6 +50,7 @@ type action = KeyAction of string
             | HookAction of state_hook
             | StateChangeAction of state_change
             | DelayAction of float
+            | WindowChange of string
 
 type run = action list
 
@@ -89,6 +90,7 @@ let run_of fsa run_length =
     | F.KeysAction keys -> (L.map (fun key ->
         KeyAction key
     ) (L.rev keys))
+    | F.WindowChange str -> [ WindowChange str ]
     | F.TypeAction {F.fname;F.text} ->
         [ TypeAction {fname;  text} ]
     | F.MoveAction {F.region;F.sx;F.sy;F.ex;F.ey} ->
@@ -214,6 +216,11 @@ let to_json fsa run_length =
   let module J = Yojson
   in let run = run_of fsa run_length
   in let to_json = function
+    | WindowChange win ->
+        let head = ("type", `String "window-change")
+        in let window = `String win
+        in let body = ("body", window)
+        in `Assoc [head; body]
     | KeyAction key ->
         let head = ("type", `String "key")
         in let key = `String key
@@ -340,14 +347,14 @@ let command_of action =
       ) in xsearch ^ "click --clearmodifiers --repeat "
       ^ string_of_int dist  ^ " " ^ button
     | ShellAction cmd -> cmd
-    | HookAction _ -> ""
-    | StateChangeAction _ -> ""
-    | DelayAction _ -> ""
+    | _ -> ""
 
 
 
 (* Debug information for actions, as strings *)
 let comment_on = function
+  | WindowChange win ->
+      "Changing window target to <" ^ win ^ ">"
   | KeyAction key ->
       "Sending keypress <" ^ key ^ ">"
   | TypeAction {text; fname} ->

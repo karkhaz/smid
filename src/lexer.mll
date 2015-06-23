@@ -85,7 +85,8 @@ rule lex = parse
   | "clik"        as l { dbs "top" l lexbuf; read_click () lexbuf     }
   | "scroll"      as l { dbs "top" l lexbuf; read_scroll () lexbuf    }
   | "scrl"        as l { dbs "top" l lexbuf; read_scroll () lexbuf    }
-  | "{"           as l { dbc "top" l lexbuf; read_bash "" lexbuf      }
+  | "winc"        as l { dbs "top" l lexbuf; read_window () lexbuf    }
+  | "win-change"  as l { dbs "top" l lexbuf; read_window () lexbuf    }
 
   | "prob"        as l { dbs "top" l lexbuf; PROB }
   | "high"        as l { dbs "top" l lexbuf; HIGH }
@@ -182,6 +183,21 @@ and read_verbatim' acc = parse
                   read_verbatim' (acc ^ (String.make 1 c)) lexbuf
                 }
 
+and read_window u = parse
+  | ws       {                         read_window () lexbuf }
+  | '"' as l { dbc "pvrb" l lexbuf; read_window' "" lexbuf }
+  | nl  as l { dbc "pvrb" l lexbuf; incr_ln lexbuf; read_window () lexbuf }
+  | _        { raise SyntaxError }
+and read_window' acc = parse
+  | '"'    as l { dbc "verb" l lexbuf; WINDOW_CHANGE acc }
+  | "\\\"" as l { dbs "verb" l lexbuf; read_window' (acc ^ "\"") lexbuf }
+  | "\\n"  as l { dbs "verb" l lexbuf; read_window' (acc ^ "\n") lexbuf }
+  | "\\t"  as l { dbs "verb" l lexbuf; read_window' (acc ^ "\t") lexbuf }
+  | "\\\\" as l { dbs "verb" l lexbuf; read_window' (acc ^ "\\") lexbuf }
+  | _ as c as l { dbc "verb" l lexbuf;
+                  read_window' (acc ^ (String.make 1 c)) lexbuf
+                }
+
 (* Rules for lexing bash, invoked when we see the shell keyword at
  * toplevel *)
 and read_shell acc = parse
@@ -191,16 +207,6 @@ and read_shell acc = parse
   | "\\}"  as l { dbs "shell" l lexbuf; read_shell (acc ^ "}")  lexbuf }
   | _ as c as l { dbc "shell" l lexbuf;
                   read_shell (acc ^ (String.make 1 c)) lexbuf
-                }
-
-(* Rules for lexing bash, invoked when we see a } at toplevel *)
-and read_bash acc = parse
-  | '}'    as l { dbc "bash" l lexbuf; BASH_SCRIPT acc }
-  | nl     as l { dbc "bash" l lexbuf; incr_ln lexbuf;
-                                       read_bash (acc ^ "\n") lexbuf }
-  | "\\}"  as l { dbs "bash" l lexbuf; read_bash (acc ^ "}")  lexbuf }
-  | _ as c as l { dbc "bash" l lexbuf;
-                  read_bash (acc ^ (String.make 1 c)) lexbuf
                 }
 
 (* Rules for lexing file paths, invoked when we see the line keyword
