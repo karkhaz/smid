@@ -38,10 +38,8 @@ type scroll_direction = Up | Down
 
 type location = {
   region: string option;
-  sx: int;
-  sy: int;
-  ex: int;
-  ey: int;
+  x: int;
+  y: int;
 }
 
 type debug_info = (string * string)
@@ -130,7 +128,19 @@ let run_of fsa run_length =
         then actions
         else HookAction (L.hd hooks) :: actions
       in let add_actions fsa_acts run_acts =
-        L.fold_left (fun run_acts fsa_act ->
+        let coords_of_region sx sy ex ey =
+          let x_range = ex - sx
+          in let rand = if x_range = 0
+          then 0
+          else Random.int x_range
+          in let x = sx + rand
+          in let y_range = ey - sy
+          in let rand = if y_range = 0
+          then 0
+          else Random.int y_range
+          in let y = sy + rand
+          in (x, y)
+        in L.fold_left (fun run_acts fsa_act ->
           let fsa_acts = match fsa_act with
             | F.KeysAction keys -> (L.map (fun key ->
                 KeyAction key
@@ -138,9 +148,10 @@ let run_of fsa run_length =
             | F.TypeAction {F.fname;F.text} ->
                 [ TypeAction {fname;  text} ]
             | F.MoveAction {F.region;F.sx;F.sy;F.ex;F.ey} ->
-                [ MoveAction {region;sx;sy;ex;ey} ]
-            | F.MoveRelAction {F.region;F.sx;F.sy;F.ex;F.ey} ->
-                [ MoveRelAction {region;sx;sy;ex;ey} ]
+                let (x, y) = coords_of_region sx sy ex ey
+                in [ MoveAction {region;x;y} ]
+            | F.MoveRelAction {F.sx;F.sy;_} ->
+                [ MoveRelAction {region = None; x = sx; y = sy} ]
             | F.ClickAction (F.Left,  i) -> [ ClickAction (Left,  i) ]
             | F.ClickAction (F.Right, i) -> [ ClickAction (Right, i) ]
             | F.ScrollAction (F.Up,   i) -> [ ScrollAction (Up,   i) ]
@@ -196,31 +207,27 @@ let to_json fsa run_length =
         ]
         in let body = ("body", body)
         in `Assoc [head; body]
-    | MoveAction {region; sx; sy; ex; ey} ->
+    | MoveAction {region; x; y} ->
         let head = ("type", `String "move")
         in let region = match region with
           | Some r -> `String r
           | None ->   `Null
         in let body = `Assoc [
           ("region",   region);
-          ("start-x", `Int sx);
-          ("end-x",   `Int ex);
-          ("start-y", `Int sy);
-          ("end-y",   `Int ey)
+          ("x", `Int x);
+          ("y", `Int y);
         ]
         in let body = ("body", body)
         in `Assoc [head; body]
-    | MoveRelAction {region; sx; sy; ex; ey} ->
+    | MoveRelAction {region; x; y} ->
         let head = ("type", `String "move_rel")
         in let region = match region with
           | Some r -> `String r
           | None -> `Null
         in let body = `Assoc [
           ("region",   region);
-          ("start-x", `Int sx);
-          ("end-x",   `Int ex);
-          ("start-y", `Int sy);
-          ("end-y",   `Int ey)
+          ("x", `Int x);
+          ("y", `Int y);
         ]
         in let body = ("body", body)
         in `Assoc [head; body]
