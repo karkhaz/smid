@@ -201,12 +201,17 @@ and read_window' acc = parse
 (* Rules for lexing bash, invoked when we see the shell keyword at
  * toplevel *)
 and read_shell acc = parse
+  | ws       {                         read_shell "" lexbuf }
+  | '{' as l { dbc "pvrb" l lexbuf; read_shell' "" lexbuf }
+  | nl  as l { dbc "pvrb" l lexbuf; incr_ln lexbuf; read_shell "" lexbuf }
+  | _        { raise SyntaxError }
+and read_shell' acc = parse
   | '}'    as l { dbc "shell" l lexbuf; SHELL_COMMAND acc }
   | nl     as l { dbc "shell" l lexbuf; incr_ln lexbuf;
-                                        read_shell (acc ^ "\n") lexbuf }
-  | "\\}"  as l { dbs "shell" l lexbuf; read_shell (acc ^ "}")  lexbuf }
+                                        read_shell' (acc ^ "\n") lexbuf }
+  | "\\}"  as l { dbs "shell" l lexbuf; read_shell' (acc ^ "}")  lexbuf }
   | _ as c as l { dbc "shell" l lexbuf;
-                  read_shell (acc ^ (String.make 1 c)) lexbuf
+                  read_shell' (acc ^ (String.make 1 c)) lexbuf
                 }
 
 (* Rules for lexing file paths, invoked when we see the line keyword
