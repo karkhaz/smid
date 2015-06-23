@@ -161,15 +161,33 @@ let run_of fsa run_length =
           in with_delays @ run_acts
         ) run_acts fsa_acts
       in match transs with
-        | [] -> acc
-        | {F.src;F.acts;F.dst;_} :: t -> let actions = []
+        | [] -> (* Last transition should be consumed in the case
+                 * below, which is the base case *)
+                failwith "Empty transitions"
+        | [{F.src;F.acts;F.dst;_}] ->
+          let actions = []
           in let actions = (mk_delay ()) :: actions
           in let actions = add_hooks dst `Pre  actions
           in let actions = add_actions acts actions
           in let actions = add_hooks src `Post actions
           in let actions = StateChangeAction {src;dst} :: actions
           in let new_acc = L.append actions acc
-          in to_actions t new_acc
+          in new_acc
+        | {F.src;F.acts;F.dst;_} :: ({F.src = next; _} as n) :: t ->
+          let actions = []
+          in let actions = (mk_delay ()) :: actions
+          in let actions =
+            if dst != next
+            then add_hooks dst `Pre  actions
+            else actions
+          in let actions = add_actions acts actions
+          in let actions =
+            if dst != next
+            then add_hooks src `Post actions
+            else actions
+          in let actions = StateChangeAction {src;dst} :: actions
+          in let new_acc = L.append actions acc
+          in to_actions (n :: t) new_acc
     in to_actions transs []
   in let drop_last_3 lst =
     let rec drop_3 lst acc =
