@@ -6,7 +6,7 @@ probably helpful, so follow the [tutorial](/smid/tutorial.html) first!
 
 ## Overview
 
-There are 6 kinds of statement in `smid`:
+There are 5 kinds of statement in `smid`:
 
 <div id="contents">
 <p>
@@ -22,11 +22,6 @@ There are 6 kinds of statement in `smid`:
 <br />
 <br />
 (transitions contain <a href="#actions">Actions</a>)
-<br />
-<br />
-<br />
-<br />
-<a href="#state-hook-declarations">State hook declarations</a>
 </p>
 </div>
 <div class="block" id="top-demo"><code>
@@ -254,11 +249,6 @@ interact with your application by taking one of the
 
 
 <h2 id="final-declarations">Final states</h2>
-
-
-
-<h2 id="state-hook-declarations">State hooks</h2>
-
 
 
 <h2 id="comments">Comments</h2>

@@ -18,8 +18,14 @@ hi link   fsaAction   Type
 syn match fsaKeyword "\v(all-except|all|stay|pre|post|initial|final|region|\=)"
 hi link   fsaKeyword   Identifier
 
-syn region fsaActionBlock start="--" end="-->" contains=fsaAction,fsaString,fsaList,fsaCoords,fsaComment,fsaProb
+syntax include @Bash syntax/sh.vim
+
+syntax region bashSnip matchgroup=Snip start="{" end="}" contains=@Bash contained
+hi link Snip SpecialComment
+
+syn region fsaActionBlock start="--" end="-->" contains=fsaAction,fsaString,fsaList,fsaCoords,fsaComment,fsaProb,bashSnip
 hi link fsaActionBlock Keyword
+
 
 syn region fsaString start='"' end='"' contained
 syn region fsaList   start='\[' end='\]' contained
@@ -31,6 +37,3 @@ hi link    fsaCoords String
 hi link    fsaProb   String
 
 
-syntax include @Bash syntax/sh.vim
-syntax region bashSnip matchgroup=Snip start="{" end="}" contains=@Bash
-hi link Snip SpecialComment

@@ -8,8 +8,3 @@ nice_state --
   text  "The user types something"
   click (1 right)
 --> naughty_state
-
-post happy_state {
-  find . -name "happy*"
-  VAR=VAL
-}

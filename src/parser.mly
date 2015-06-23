@@ -85,8 +85,6 @@ lines: line                { [$1]     }
 
 line: initial_states_line   { InitialStates  $1 }
     | final_states_line     { FinalStates    $1 }
-    | pre_state_hooks_line  { PreStateHooks  $1 }
-    | post_state_hooks_line { PostStateHooks $1 }
     | hook_line             { Hook           $1 }
     | transition_line       { Transition     $1 }
     | region_def_line       { LocationAlias  $1 }
@@ -115,12 +113,6 @@ state_list: state_string            {   [$1]   }
 
 maybe_state_list:            { [] }
                 | state_list { $1 }
-
-pre_state_hooks_line: PRE state_string BASH_SCRIPT
-                      { ($2, $3) }
-
-post_state_hooks_line: POST state_string BASH_SCRIPT
-                       { ($2, $3) }
 
 transition_line: additive_transition    { $1 }
                | subtractive_transition { $1 }

@@ -102,13 +102,13 @@ let run_of fsa run_length =
     | F.ScrollAction (F.Down, i) -> [ ScrollAction (Down, i) ]
     | F.ShellAction s -> [ ShellAction s ]
   in let hook_actions_of state pre_or_post =
-    let {F.new_hooks; _} = fsa in
+    let {F.hooks; _} = fsa in
     let hooks = L.filter (fun hook ->
       match (hook, pre_or_post) with
-        | ((F.NPost, s, actions), `Post) -> s = state
-        | ((F.NPre,  s, actions), `Pre ) -> s = state
+        | ((F.Post, s, actions), `Post) -> s = state
+        | ((F.Pre,  s, actions), `Pre ) -> s = state
         | (_          , _    ) -> false
-    ) new_hooks
+    ) hooks
     in let actions = L.flatten (L.map (function
       | (_, _, actions) -> L.flatten(L.map(fun act ->
           fsa_act_to_acts act

@@ -19,10 +19,6 @@
 
 
 type state = string
-type hook = string
-type _state_hook = (state * hook)
-type state_hook = Pre  of _state_hook
-                | Post of _state_hook
 
 type type_action = {
   fname: string option;
@@ -48,8 +44,8 @@ type action = KeysAction of string list
             | ScrollAction of (scroll_direction * int)
             | ShellAction of string
 
-type pre_post = NPre | NPost
-type new_hook = (pre_post * state * action list)
+type pre_post = Pre | Post
+type hook = (pre_post * state * action list)
 
 type run = action list
 
@@ -68,8 +64,7 @@ type fsa = {
   inits:  state list;
   finals: state list;
   transs: trans list;
-  hooks:  state_hook list;
-  new_hooks: new_hook list;
+  hooks:  hook list;
 }
 
 
@@ -90,6 +85,3 @@ val stats_of : fsa -> string
 
 (** Return a Graphviz DOT-formatted representation of the fsa *)
 val dot_of : fsa -> string
-
-(** Return a Bash script-formatted run along the fsa *)
-val script_of : fsa -> int -> string

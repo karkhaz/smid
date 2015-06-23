@@ -27,10 +27,6 @@ module TR = TRList
 open Printf
 
 type state = string
-type hook = string
-type _state_hook = (state * hook)
-type state_hook = Pre  of _state_hook
-                | Post of _state_hook
 
 type type_action = {
   fname: string option;
@@ -56,8 +52,8 @@ type action = KeysAction of string list
             | ScrollAction of (scroll_direction * int)
             | ShellAction of string
 
-type pre_post = NPre | NPost
-type new_hook = (pre_post * state * action list)
+type pre_post = Pre | Post
+type hook = (pre_post * state * action list)
 
 type run = action list
 
@@ -76,8 +72,7 @@ type fsa = {
   inits:  state list;
   finals: state list;
   transs: trans list;
-  hooks:  state_hook list;
-  new_hooks:  new_hook list;
+  hooks:  hook list;
 }
 
 
@@ -222,8 +217,6 @@ let normalise frep =
             | FR.Subtractive lst -> d @ lst
       )
       | FR.Hook (_, states, _) -> states
-      | FR.PreStateHooks (s, _) -> [s]
-      | FR.PostStateHooks (s, _) -> [s]
       | FR.LocationAlias _ -> []
     in {fsa with states = states_from_frep get_states}
   in let get_inits frep fsa =
@@ -236,18 +229,6 @@ let normalise frep =
       | FR.FinalStates e -> e
       | _ -> []
     in {fsa with finals = states_from_frep get_states}
-
-  in let get_hooks frep fsa =
-    let hooks_of_entry = function
-      | FR.PreStateHooks  (state, hooks) -> [Pre (state, hooks)]
-      | FR.PostStateHooks (state, hooks) -> [Post (state, hooks)]
-      | _ -> []
-    in let hooks_from_frep =
-      let all_states = L.fold_left (fun acc entry ->
-        acc @ (hooks_of_entry entry)
-      ) [] frep
-      in L.sort_uniq compare all_states
-    in {fsa with hooks = hooks_from_frep}
 
   (* FR.action list -> action list list *)
   in let conv_actions acts =
@@ -322,15 +303,15 @@ let normalise frep =
     in let act_lists = conv_actions acts [[]]
     in L.map (L.rev) act_lists
 
-  in let get_new_hooks frep fsa =
+  in let get_hooks frep fsa =
     let hooks_of_entry = function
       | FR.Hook (pre_post, states, actions) ->
           let lst = L.map (fun state ->
             let conv_acts = conv_actions actions
             in L.map (fun action_list ->
               let pre_post = match pre_post with
-                | FR.Pre  -> NPre
-                | FR.Post -> NPost
+                | FR.Pre  -> Pre
+                | FR.Post -> Post
               in (pre_post, state, action_list)
             ) conv_acts
           ) states
@@ -341,7 +322,7 @@ let normalise frep =
         acc @ (hooks_of_entry entry)
       ) [] frep
       in L.sort_uniq compare all_states
-    in {fsa with new_hooks = hooks_from_frep}
+    in {fsa with hooks = hooks_from_frep}
 
   in let get_transs frep fsa =
     let all_states = fsa.states
@@ -391,15 +372,13 @@ let normalise frep =
     finals = [];
     transs = [];
     hooks  = [];
-    new_hooks  = [];
   }
   in empty
   |> get_all_states frep
   |> get_inits  frep
   |> get_finals frep
-  |> get_hooks  frep
   |> get_transs frep
-  |> get_new_hooks frep
+  |> get_hooks frep
 
 
 
@@ -493,6 +472,7 @@ let dot_of fsa =
 
 
 
+(*
 let script_of fsa run_length =
   (* get_nexts gets the transitions that could be taken away from
    * source. It doesn't get all of the transitions, since some
@@ -682,3 +662,4 @@ let script_of fsa run_length =
   ) "" script
   in "#!/bin/bash\n" ^
      (pre_hooks_of start_state) ^ script ^ (post_hooks_of final_state)
+ *)

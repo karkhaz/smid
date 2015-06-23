@@ -2,11 +2,6 @@
 initial start
 final quit
 
-pre start {
-xfce4-terminal -e cmus &
-WINDOW_NAME=cmus
-}
-
 # Quitting cmus
 all-except start, search -- keys [ q y ] --> quit
 # Invoke quit dialog, then change our mind about quitting
@@ -26,6 +21,10 @@ all-except start, search -- keys [ j ] --> stay
 all-except start, search -- keys [ k ] --> stay
 
 # ARTIST / ALBUM VIEW (VIEW 1) ######################################
+
+start --
+  shell { xfce4-terminal -e cmus & }
+--> pre
 
 # Switching between the two panes
 artist_pane -- keys [ Tab ] --> album_pane

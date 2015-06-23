@@ -1,11 +1,11 @@
 initial start
 final quit
 
-pre start {
-  WINDOW_NAME="\- Iceweasel"
-  iceweasel &
-  sleep 3
-}
+start --
+  shel { WINDOW_NAME="\- Iceweasel"}
+  shel { iceweasel & }
+  shel { sleep 3 }
+--> pre
 
 region address_bar = (130, 50)
 region back_button = (40, 40, 70, 60)
@@ -67,8 +67,13 @@ all -- keys [ Control+t ] --> start
 
 region history_list = (200, 60, 600, 200)
 
-pre  history_window { WINDOW_NAME="Library"      }
-post history_window { WINDOW_NAME="\- Iceweasel" }
+history_window --
+  shel { WINDOW_NAME="Library" }
+--> pre
+
+history_window --
+  shel { WINDOW_NAME="\- Iceweasel" }
+--> post
 
 all -- keys [ Control+Shift+h ] --> history_window
 
