@@ -6,3 +6,7 @@ foo -- keys [ q ] --> bar
 # Can't get here from init, and can't reach final
 zork -- keys [ a ] --> bork
 bork -- keys [ a ] --> zork
+
+foo --
+  winc "foo"
+--> pre

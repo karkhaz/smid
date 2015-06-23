@@ -5,3 +5,7 @@ final bar
 region (10 20 5 50)
 
 foo -- keys [ a ] --> bar
+
+foo --
+  winc "foo"
+--> pre

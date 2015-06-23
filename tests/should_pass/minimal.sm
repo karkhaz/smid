@@ -1,4 +1,8 @@
 initial bar
 final foo
 
+bar --
+  winc "foo"
+--> pre
+
 bar -- keys [ q ] --> foo

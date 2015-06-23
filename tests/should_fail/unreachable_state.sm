@@ -3,3 +3,7 @@ final bar
 
 # Can't get to baz from foo
 baz -- keys [ a ] --> bar
+
+foo --
+  winc "foo"
+--> pre

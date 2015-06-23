@@ -88,9 +88,46 @@ let error str =
  * - No state is unreachable
  * - All states are reachable from some initial state
  * - All states can reach some final state
+ * - All states have no more than one pre-hook and no more than one
+ *   post-hook
+ * - All initial states have a pre-hook that specifies a window change
  *)
 let is_sane fsa =
-  let inits_and_finals {inits=inits; finals=finals; _} =
+  let check_hooks fsa =
+    let {hooks; states; _} = fsa
+    in L.fold_left (fun acc state ->
+      let pre_hooks = L.filter (fun (pp, s, _) ->
+        match pp with Pre -> s = state | Post -> false
+      ) hooks
+      in let post_hooks = L.filter (fun (pp, s, _) ->
+        match pp with Post -> s = state | Pre -> false
+      ) hooks
+      in if (L.length pre_hooks) <= 1  &&  (L.length post_hooks) <= 1
+      then acc
+      else if (L.length pre_hooks) <= 1
+      then (error
+      (sprintf "State <%s> has more than one post hook" state); false)
+      else (* L.length post_hooks) <= 1 *)
+      (error
+      (sprintf "State <%s> has more than one pre hook" state); false)
+    ) true states
+  in let initials_have_windows fsa =
+    let {hooks; inits; _} = fsa
+    in L.fold_left (fun acc state ->
+      let has_window = L.fold_left (fun acc hook ->
+        let (_, _, actions) = hook
+        in L.fold_left (fun acc action ->
+          match action with
+            | WindowChange _ -> true
+            | _ -> acc
+        ) false actions
+      ) false hooks
+      in if has_window
+      then acc
+      else (error (sprintf
+      "Initial state <%s> does not set a window target" state) ; false)
+    ) true inits
+  in let inits_and_finals {inits=inits; finals=finals; _} =
     let _inits inits =
       if L.length inits > 0
       then true
@@ -183,6 +220,8 @@ let is_sane fsa =
   && (no_unreachable fsa)
   && (all_reachable_from_init fsa)
   && (finals_reachable_from_all fsa)
+  && (check_hooks fsa)
+  && (initials_have_windows fsa)
 
 
 

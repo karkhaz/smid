@@ -4,5 +4,9 @@
 initial foo
 final bar
 
+foo --
+  winc "foo"
+--> pre
+
 foo -- clik ( 1 left  ) --> bar
 foo -- clik ( right 2 ) --> bar

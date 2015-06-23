@@ -4,5 +4,9 @@
 initial foo
 final bar
 
+foo --
+  winc "foo"
+--> pre
+
 foo -- scrl ( 1 up   ) --> bar
 foo -- scrl ( down 2 ) --> bar

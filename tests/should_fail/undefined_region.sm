@@ -2,3 +2,7 @@ initial foo
 final bar
 
 foo -- move unknown_region --> bar
+
+foo --
+  winc "foo"
+--> pre
