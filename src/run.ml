@@ -23,9 +23,8 @@ module L = List
 module U = Util
 open Printf
 
-type _state_hook = { state: string; hook: string; }
-type state_hook = Pre  of _state_hook
-                | Post of _state_hook
+type state_hook = Pre  of string
+                | Post of string
 
 type type_action  = { fname: string option; text:  string; }
 type state_change = { src: string; dst: string; }
@@ -74,22 +73,54 @@ let run_of fsa run_length =
       let rand = Random.int 20
       in if rand = 0 then acc else e
     ) h t
-  in let hooks_of state pre_or_post =
-    let {F.hooks; _} = fsa in
-    let hooks = L.filter (fun hook -> match (hook, pre_or_post) with
-      | (F.Post (s, _), `Post) -> s = state
-      | (F.Pre  (s, _), `Pre ) -> s = state
-      | (_          , _    ) -> false
-    ) hooks
-    in L.map (function
-      | F.Post (state, hook) -> Post {state; hook}
-      | F.Pre (state, hook)  -> Pre  {state; hook}
-    ) hooks
+  in let coords_of_region sx sy ex ey =
+    let x_range = ex - sx
+    in let rand = if x_range = 0
+    then 0
+    else Random.int x_range
+    in let x = sx + rand
+    in let y_range = ey - sy
+    in let rand = if y_range = 0
+    then 0
+    else Random.int y_range
+    in let y = sy + rand
+    in (x, y)
+  in let fsa_act_to_acts = function
+    | F.KeysAction keys -> (L.map (fun key ->
+        KeyAction key
+    ) (L.rev keys))
+    | F.TypeAction {F.fname;F.text} ->
+        [ TypeAction {fname;  text} ]
+    | F.MoveAction {F.region;F.sx;F.sy;F.ex;F.ey} ->
+        let (x, y) = coords_of_region sx sy ex ey
+        in [ MoveAction {region;x;y} ]
+    | F.MoveRelAction {F.sx;F.sy;_} ->
+        [ MoveRelAction {region = None; x = sx; y = sy} ]
+    | F.ClickAction (F.Left,  i) -> [ ClickAction (Left,  i) ]
+    | F.ClickAction (F.Right, i) -> [ ClickAction (Right, i) ]
+    | F.ScrollAction (F.Up,   i) -> [ ScrollAction (Up,   i) ]
+    | F.ScrollAction (F.Down, i) -> [ ScrollAction (Down, i) ]
+    | F.ShellAction s -> [ ShellAction s ]
+  in let hook_actions_of state pre_or_post =
+    let {F.new_hooks; _} = fsa in
+    let hooks = L.filter (fun hook ->
+      match (hook, pre_or_post) with
+        | ((F.NPost, s, actions), `Post) -> s = state
+        | ((F.NPre,  s, actions), `Pre ) -> s = state
+        | (_          , _    ) -> false
+    ) new_hooks
+    in let actions = L.flatten (L.map (function
+      | (_, _, actions) -> L.flatten(L.map(fun act ->
+          fsa_act_to_acts act
+      ) actions)
+    ) hooks)
+    in match pre_or_post, (L.length actions) with
+      | _, 0  -> actions
+      | `Pre,  n -> (HookAction (Pre state))  :: actions
+      | `Post, n -> (HookAction (Post state)) :: actions
   in let add_hooks state pre_or_post actions =
-    let hooks = hooks_of state pre_or_post
-    in if L.length hooks = 0
-    then actions
-    else HookAction (L.hd hooks) :: actions
+    let hooks = hook_actions_of state pre_or_post
+    in hooks @ actions
   in let goes_to_final {F.dst; _} =
     let {F.finals; _} = fsa in L.mem dst finals
   (* builds a run backwards. This is later reversed by add_hooks *)
@@ -126,35 +157,8 @@ let run_of fsa run_length =
       let mk_delay () =
         DelayAction ((Random.float 10.0) +. 2.0)
       in let add_actions fsa_acts run_acts =
-        let coords_of_region sx sy ex ey =
-          let x_range = ex - sx
-          in let rand = if x_range = 0
-          then 0
-          else Random.int x_range
-          in let x = sx + rand
-          in let y_range = ey - sy
-          in let rand = if y_range = 0
-          then 0
-          else Random.int y_range
-          in let y = sy + rand
-          in (x, y)
-        in L.fold_left (fun run_acts fsa_act ->
-          let fsa_acts = match fsa_act with
-            | F.KeysAction keys -> (L.map (fun key ->
-                KeyAction key
-            ) (L.rev keys))
-            | F.TypeAction {F.fname;F.text} ->
-                [ TypeAction {fname;  text} ]
-            | F.MoveAction {F.region;F.sx;F.sy;F.ex;F.ey} ->
-                let (x, y) = coords_of_region sx sy ex ey
-                in [ MoveAction {region;x;y} ]
-            | F.MoveRelAction {F.sx;F.sy;_} ->
-                [ MoveRelAction {region = None; x = sx; y = sy} ]
-            | F.ClickAction (F.Left,  i) -> [ ClickAction (Left,  i) ]
-            | F.ClickAction (F.Right, i) -> [ ClickAction (Right, i) ]
-            | F.ScrollAction (F.Up,   i) -> [ ScrollAction (Up,   i) ]
-            | F.ScrollAction (F.Down, i) -> [ ScrollAction (Down, i) ]
-            | F.ShellAction s -> [ ShellAction s ]
+        L.fold_left (fun run_acts fsa_act ->
+          let fsa_acts = fsa_act_to_acts fsa_act
           in let with_delays = L.flatten(L.map(fun action ->
             [mk_delay(); action]
           ) fsa_acts)
@@ -279,13 +283,12 @@ let to_json fsa run_length =
         in `Assoc [head; body]
     | HookAction h ->
         let head = ("type", `String "hook")
-        in let position, state, hook = match h with
-          | Pre  {state; hook} -> "pre",  state, hook
-          | Post {state; hook} -> "post", state, hook
+        in let position, state = match h with
+          | Pre  state -> "pre",  state
+          | Post state -> "post", state
         in let body = `Assoc [
           ("position", `String position);
           ("state",    `String state);
-          ("hook",     `String hook)
         ]
         in let body = ("body", body)
         in `Assoc [head; body]
@@ -337,8 +340,7 @@ let command_of action =
       ) in xsearch ^ "click --clearmodifiers --repeat "
       ^ string_of_int dist  ^ " " ^ button
     | ShellAction cmd -> cmd
-    | HookAction Pre  {hook; _} -> hook
-    | HookAction Post {hook; _} -> hook
+    | HookAction _ -> ""
     | StateChangeAction _ -> ""
     | DelayAction _ -> ""
 
@@ -378,9 +380,9 @@ let comment_on = function
       "Scrolling down by " ^ string_of_int dist
   | ShellAction cmd ->
       "Executing shell command {\n" ^ cmd ^ "\n}"
-  | HookAction Pre {state; _} ->
+  | HookAction Pre state ->
       "Executing pre-state hook for state <" ^ state ^ ">"
-  | HookAction Post {state; _} ->
+  | HookAction Post state ->
       "Executing post-state hook for state <" ^ state ^ ">"
   | StateChangeAction {src; dst} ->
       "Changing states from <" ^ src ^ "> to <" ^ dst ^ ">"
