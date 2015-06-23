@@ -52,12 +52,14 @@ type src_states = Additive    of string list
 
 type trans = (src_states * action list * dest_state)
 
-
+type pre_post = Pre | Post
+type new_hook = (pre_post * string list * action list)
 
 type fsa_entry  = InitialStates  of initial_state list
                 | FinalStates    of final_state list
                 | PreStateHooks  of state_hooks
                 | PostStateHooks of state_hooks
+                | Hook           of new_hook
                 | Transition     of trans
                 | LocationAlias  of (string * coordinates)
 

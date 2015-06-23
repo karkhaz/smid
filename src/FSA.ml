@@ -56,6 +56,9 @@ type action = KeysAction of string list
             | ScrollAction of (scroll_direction * int)
             | ShellAction of string
 
+type pre_post = NPre | NPost
+type new_hook = (pre_post * state * action list)
+
 type run = action list
 
 
@@ -74,6 +77,7 @@ type fsa = {
   finals: state list;
   transs: trans list;
   hooks:  state_hook list;
+  new_hooks:  new_hook list;
 }
 
 
@@ -217,6 +221,7 @@ let normalise frep =
             | FR.Additive    lst
             | FR.Subtractive lst -> d @ lst
       )
+      | FR.Hook (_, states, _) -> states
       | FR.PreStateHooks (s, _) -> [s]
       | FR.PostStateHooks (s, _) -> [s]
       | FR.LocationAlias _ -> []
@@ -244,80 +249,102 @@ let normalise frep =
       in L.sort_uniq compare all_states
     in {fsa with hooks = hooks_from_frep}
 
+  (* FR.action list -> action list list *)
+  in let conv_actions acts =
+    let rec conv_actions acts acc =
+      match acts with
+      | [] -> acc
+      | act :: t -> (
+        match act with
+          | FR.Probability _ -> conv_actions t acc
+          | FR.MoveAction loc ->
+              let coords = match loc with
+                | FR.Coordinates (sx, sy, ex, ey) ->
+                    {region=None; sx; sy; ex; ey}
+                | FR.Alias s ->
+                    let sx, sy, ex, ey = coords_from_alias s
+                    in {region = Some s; sx; sy; ex; ey}
+              in let new_acc = L.map (fun l ->
+                MoveAction coords :: l) acc
+              in conv_actions t new_acc
+          | FR.ShellAction str -> let new_acc = L.map (
+              fun l -> (ShellAction str) :: l
+              ) acc
+            in conv_actions t new_acc
+          | FR.MoveRelAction loc ->
+              let coords = match loc with
+                | FR.Coordinates (sx, sy, ex, ey) ->
+                    {region=None; sx; sy; ex; ey}
+                | FR.Alias s ->
+                    let sx, sy, ex, ey = coords_from_alias s
+                    in {region = Some s; sx; sy; ex; ey}
+              in let new_acc = L.map (fun l ->
+                MoveRelAction coords :: l) acc
+              in conv_actions t new_acc
+          | FR.ClickAction (s, n) ->
+              let new_side = (
+                match s with
+                  | FR.Left -> Left
+                  | FR.Right -> Right
+              ) in let new_acc = L.map (fun l ->
+                ClickAction (new_side, n) :: l) acc
+              in conv_actions t new_acc
+          | FR.ScrollAction (d, n) ->
+              let new_direction = (
+                match d with
+                  | FR.Up -> Up
+                  | FR.Down -> Down
+              ) in let new_acc = L.map (fun l ->
+                ScrollAction (new_direction, n) :: l) acc
+              in conv_actions t new_acc
+          | FR.KeysAction a ->
+              let new_acc = L.map (fun l ->
+                KeysAction a :: l) acc
+              in conv_actions t new_acc
+          | FR.TypeAction a ->
+              let new_acc = L.map (fun l ->
+                TypeAction {fname = None; text = a} :: l) acc
+              in conv_actions t new_acc
+          | FR.LineAction a ->
+              let fname = !C.include_dir ^ "/" ^ a
+              in let lines = Util.lines_of_file fname
+              in let actions = L.map (fun l ->
+                TypeAction {fname = Some fname; text = l}
+              ) lines
+              in let new_acc = L.map (fun l ->
+                L.map (fun act ->
+                  act :: l
+                ) actions
+              ) acc
+              |> L.flatten
+              in conv_actions t new_acc
+      )
+    in let act_lists = conv_actions acts [[]]
+    in L.map (L.rev) act_lists
+
+  in let get_new_hooks frep fsa =
+    let hooks_of_entry = function
+      | FR.Hook (pre_post, states, actions) ->
+          let lst = L.map (fun state ->
+            let conv_acts = conv_actions actions
+            in L.map (fun action_list ->
+              let pre_post = match pre_post with
+                | FR.Pre  -> NPre
+                | FR.Post -> NPost
+              in (pre_post, state, action_list)
+            ) conv_acts
+          ) states
+          in L.flatten lst
+      | _ -> []
+    in let hooks_from_frep =
+      let all_states = L.fold_left (fun acc entry ->
+        acc @ (hooks_of_entry entry)
+      ) [] frep
+      in L.sort_uniq compare all_states
+    in {fsa with new_hooks = hooks_from_frep}
+
   in let get_transs frep fsa =
     let all_states = fsa.states
-    (* FR.action list -> action list list *)
-    in let conv_actions acts =
-      let rec conv_actions acts acc =
-        match acts with
-        | [] -> acc
-        | act :: t -> (
-          match act with
-            | FR.Probability _ -> conv_actions t acc
-            | FR.MoveAction loc ->
-                let coords = match loc with
-                  | FR.Coordinates (sx, sy, ex, ey) ->
-                      {region=None; sx; sy; ex; ey}
-                  | FR.Alias s ->
-                      let sx, sy, ex, ey = coords_from_alias s
-                      in {region = Some s; sx; sy; ex; ey}
-                in let new_acc = L.map (fun l ->
-                  MoveAction coords :: l) acc
-                in conv_actions t new_acc
-            | FR.ShellAction str -> let new_acc = L.map (
-                fun l -> (ShellAction str) :: l
-                ) acc
-              in conv_actions t new_acc
-            | FR.MoveRelAction loc ->
-                let coords = match loc with
-                  | FR.Coordinates (sx, sy, ex, ey) ->
-                      {region=None; sx; sy; ex; ey}
-                  | FR.Alias s ->
-                      let sx, sy, ex, ey = coords_from_alias s
-                      in {region = Some s; sx; sy; ex; ey}
-                in let new_acc = L.map (fun l ->
-                  MoveRelAction coords :: l) acc
-                in conv_actions t new_acc
-            | FR.ClickAction (s, n) ->
-                let new_side = (
-                  match s with
-                    | FR.Left -> Left
-                    | FR.Right -> Right
-                ) in let new_acc = L.map (fun l ->
-                  ClickAction (new_side, n) :: l) acc
-                in conv_actions t new_acc
-            | FR.ScrollAction (d, n) ->
-                let new_direction = (
-                  match d with
-                    | FR.Up -> Up
-                    | FR.Down -> Down
-                ) in let new_acc = L.map (fun l ->
-                  ScrollAction (new_direction, n) :: l) acc
-                in conv_actions t new_acc
-            | FR.KeysAction a ->
-                let new_acc = L.map (fun l ->
-                  KeysAction a :: l) acc
-                in conv_actions t new_acc
-            | FR.TypeAction a ->
-                let new_acc = L.map (fun l ->
-                  TypeAction {fname = None; text = a} :: l) acc
-                in conv_actions t new_acc
-            | FR.LineAction a ->
-                let fname = !C.include_dir ^ "/" ^ a
-                in let lines = Util.lines_of_file fname
-                in let actions = L.map (fun l ->
-                  TypeAction {fname = Some fname; text = l}
-                ) lines
-                in let new_acc = L.map (fun l ->
-                  L.map (fun act ->
-                    act :: l
-                  ) actions
-                ) acc
-                |> L.flatten
-                in conv_actions t new_acc
-        )
-      in let act_lists = conv_actions acts [[]]
-      in L.map (L.rev) act_lists
     in let probability_of actions =
       L.fold_left (fun acc e ->
         match e with
@@ -364,6 +391,7 @@ let normalise frep =
     finals = [];
     transs = [];
     hooks  = [];
+    new_hooks  = [];
   }
   in empty
   |> get_all_states frep
@@ -371,6 +399,7 @@ let normalise frep =
   |> get_finals frep
   |> get_hooks  frep
   |> get_transs frep
+  |> get_new_hooks frep
 
 
 

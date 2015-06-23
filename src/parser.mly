@@ -87,6 +87,7 @@ line: initial_states_line   { InitialStates  $1 }
     | final_states_line     { FinalStates    $1 }
     | pre_state_hooks_line  { PreStateHooks  $1 }
     | post_state_hooks_line { PostStateHooks $1 }
+    | hook_line             { Hook           $1 }
     | transition_line       { Transition     $1 }
     | region_def_line       { LocationAlias  $1 }
 
@@ -131,6 +132,12 @@ additive_transition:
 subtractive_transition:
   ALL maybe_state_list ARROW_BEGIN action_list ARROW_END dest_state
   { (Subtractive $2, $4, $6) }
+
+hook_line:
+    state_list ARROW_BEGIN action_list ARROW_END PRE
+    { (Pre, $1, $3) }
+  | state_list ARROW_BEGIN action_list ARROW_END POST
+    { (Post, $1, $3) }
 
 dest_state: IDENT { DestState $1 }
           | STAY  { Stay         }

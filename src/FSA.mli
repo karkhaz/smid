@@ -48,6 +48,9 @@ type action = KeysAction of string list
             | ScrollAction of (scroll_direction * int)
             | ShellAction of string
 
+type pre_post = NPre | NPost
+type new_hook = (pre_post * state * action list)
+
 type run = action list
 
 
@@ -66,6 +69,7 @@ type fsa = {
   finals: state list;
   transs: trans list;
   hooks:  state_hook list;
+  new_hooks: new_hook list;
 }
 
 
