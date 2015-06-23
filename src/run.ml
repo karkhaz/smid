@@ -87,6 +87,11 @@ let run_of fsa run_length =
       | F.Post (state, hook) -> Post {state; hook}
       | F.Pre (state, hook)  -> Pre  {state; hook}
     ) hooks
+  in let add_hooks state pre_or_post actions =
+    let hooks = hooks_of state pre_or_post
+    in if L.length hooks = 0
+    then actions
+    else HookAction (L.hd hooks) :: actions
   in let goes_to_final {F.dst; _} =
     let {F.finals; _} = fsa in L.mem dst finals
   (* builds a run backwards. This is later reversed by add_hooks *)
@@ -122,11 +127,6 @@ let run_of fsa run_length =
     in let rec to_actions transs acc =
       let mk_delay () =
         DelayAction ((Random.float 10.0) +. 2.0)
-      in let add_hooks state pre_or_post actions =
-        let hooks = hooks_of state pre_or_post
-        in if L.length hooks = 0
-        then actions
-        else HookAction (L.hd hooks) :: actions
       in let add_actions fsa_acts run_acts =
         let coords_of_region sx sy ex ey =
           let x_range = ex - sx
@@ -184,7 +184,9 @@ let run_of fsa run_length =
   in let initial = U.random_from_list inits
   in let transitions = build_run initial run_length []
   in let actions = to_actions transitions
-  in drop_last_3 actions (* drop transition to __fake_state & delays *)
+  (* drop transition to __fake_state & delays *)
+  in let actions = drop_last_3 actions
+  in add_hooks initial `Pre actions
 
 
 
