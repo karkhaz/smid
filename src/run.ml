@@ -47,7 +47,7 @@ type location = {
 
 type debug_info = (string * string)
 
-type action = KeysAction of string list
+type action = KeyAction of string
             | TypeAction of type_action
             | MoveAction of location
             | MoveRelAction of location
@@ -135,20 +135,22 @@ let run_of fsa run_length =
         else HookAction (L.hd hooks) :: actions
       in let add_actions fsa_acts run_acts =
         L.fold_left (fun run_acts fsa_act ->
-          let fsa_act = match fsa_act with
-            | F.KeysAction keys -> KeysAction (L.rev keys)
+          let fsa_acts = match fsa_act with
+            | F.KeysAction keys -> L.map (fun key ->
+                KeyAction key
+            ) (L.rev keys)
             | F.TypeAction {F.fname;F.text} ->
-                TypeAction {fname;    text}
+                [ TypeAction {fname;    text} ]
             | F.MoveAction {F.region;F.sx;F.sy;F.ex;F.ey} ->
-                MoveAction {region;sx;sy;ex;ey}
+                [ MoveAction {region;sx;sy;ex;ey} ]
             | F.MoveRelAction {F.region;F.sx;F.sy;F.ex;F.ey} ->
-                MoveRelAction {region;sx;sy;ex;ey}
-            | F.ClickAction (F.Left,  i) -> ClickAction (Left,  i)
-            | F.ClickAction (F.Right, i) -> ClickAction (Right, i)
-            | F.ScrollAction (F.Up,   i) -> ScrollAction (Up,   i)
-            | F.ScrollAction (F.Down, i) -> ScrollAction (Down, i)
-            | F.ShellAction s -> ShellAction s
-          in fsa_act :: run_acts
+                [ MoveRelAction {region;sx;sy;ex;ey} ]
+            | F.ClickAction (F.Left,  i) -> [ ClickAction (Left,  i) ]
+            | F.ClickAction (F.Right, i) -> [ ClickAction (Right, i) ]
+            | F.ScrollAction (F.Up,   i) -> [ ScrollAction (Up,   i) ]
+            | F.ScrollAction (F.Down, i) -> [ ScrollAction (Down, i) ]
+            | F.ShellAction s -> [ ShellAction s ]
+          in fsa_acts @ run_acts
         ) run_acts fsa_acts
       in match transs with
         | [] -> acc
@@ -178,10 +180,10 @@ let run_of fsa run_length =
 
 let to_json run =
   let to_json = function
-    | KeysAction keys ->
+    | KeyAction key ->
         let head = ("type", `String "keys")
-        in let keys = `List (L.map (fun key -> `String key) keys)
-        in let body = ("body", keys)
+        in let key = `String key
+        in let body = ("body", key)
         in `Assoc [head; body]
     | TypeAction {fname; text} ->
         let head = ("type", `String "type")
@@ -289,6 +291,7 @@ let to_json run =
   in let lst = `List (L.map (fun act -> to_json act) run)
   in let json = `Assoc [("actions", lst)]
   in J.pretty_to_string json
+
 
 
 
