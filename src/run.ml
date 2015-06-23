@@ -325,7 +325,74 @@ let command_of action =
 
 
 
-let to_script fsa run_length = ""
+(* Debug information for actions, as strings *)
+let comment_on = function
+  | KeyAction key ->
+      "Sending keypress <" ^ key ^ ">"
+  | TypeAction {text; fname} ->
+      "Typing <" ^ text ^ ">" ^ (
+      match fname with
+        | Some file -> " from file <" ^ file ^ ">"
+        | None -> ""
+    )
+  | MoveAction {region;x;y} ->
+      "Moving to point (" ^ string_of_int x ^ ", "
+                          ^ string_of_int y ^ ")" ^ (
+      match region with
+        | Some r -> " in region <" ^ r ^ ">"
+        | None -> ""
+      )
+  | MoveRelAction {x;y} ->
+      "Moving (" ^ string_of_int x ^ ", "
+                 ^ string_of_int y ^ ") relative to current position"
+  | ClickAction (side, freq) ->
+      let freq = match freq with
+        | 1 -> "Single" | 2 -> "Double" | 3 -> "Triple"
+        | n -> string_of_int n
+      in let side = match side with
+        | Left  -> "left"
+        | Right -> "right"
+      in freq ^ "-" ^ side ^ "-clicking"
+  | ScrollAction (Up, dist) ->
+      "Scrolling up by " ^ string_of_int dist
+  | ScrollAction (Down, dist) ->
+      "Scrolling down by " ^ string_of_int dist
+  | ShellAction cmd ->
+      "Executing shell command {\n" ^ cmd ^ "\n}"
+  | HookAction Pre {state; _} ->
+      "Executing pre-state hook for state <" ^ state ^ ">"
+  | HookAction Post {state; _} ->
+      "Executing post-state hook for state <" ^ state ^ ">"
+  | StateChangeAction {src; dst} ->
+      "Changing states from <" ^ src ^ "> to <" ^ dst ^ ">"
+  | DelayAction n ->
+      sprintf "Waiting for approx %2.3fs" n
+
+
+let action_pair action = (command_of action), (comment_on action)
+
+
+
+let to_script fsa run_length =
+  let run = run_of fsa run_length
+  in "#!/bin/bash\n\n" ^
+  L.fold_left (fun acc line ->
+    acc ^ "\n" ^ line
+  ) ""  (L.flatten (
+          L.map(fun action -> match action with
+            | DelayAction time as a -> let _, comment = action_pair a
+              in [
+                "echo \"" ^ comment ^ "\"";
+                "sleep "  ^ string_of_float time
+              ]
+            | a -> let command, comment = action_pair a
+               in [
+                 "echo \"" ^ comment ^ "\"";
+                 command;
+               ]
+          ) run
+        )
+  ) ^ "\n"
 
 
 
