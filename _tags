@@ -1,1 +1,1 @@
-<**/*.ml> or <**/smid.native>: package(yojson)
+<*.ml> or <**/smid.native>: package(yojson)
