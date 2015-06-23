@@ -69,7 +69,7 @@ images/%.png: $(TMP_DIR)/%.dot
 
 .PHONY: clean
 clean:
-	@-rm -rf  src/$(BIN)  src/_build  images/*
+	@-rm -rf  src/$(BIN)  _build  images/*
 
 .PHONY: vimfiles
 vimfiles: $(wildcard vim/*/*)

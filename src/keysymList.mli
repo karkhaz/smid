@@ -1,4 +1,5 @@
-(* Global configuration options
+(* List of valid keysyms, generated using
+ *    sudo dumpkeys -l
  * Copyright (C) 2015 Kareem Khazem
  *
  * This file is part of smid.
@@ -17,12 +18,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-let debug = ref false
-
-let loops = ref true
-
-let run_length = ref 200
-
-let include_dir = ref "."
-
-let fsa_file = ref None
+val keysyms : string list

@@ -17,12 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-let debug = ref false
+val debug : bool ref
 
-let loops = ref true
+val loops : bool ref
 
-let run_length = ref 200
+val run_length : int ref
 
-let include_dir = ref "."
+val include_dir : string ref
 
-let fsa_file = ref None
+val fsa_file : string option ref

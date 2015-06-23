@@ -17,8 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-module L = List
-
 type initial_state = string
 type final_state = string
 

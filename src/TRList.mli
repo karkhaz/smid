@@ -1,4 +1,4 @@
-(* Global configuration options
+(* Tail-recursive versions of stdlib List functions
  * Copyright (C) 2015 Kareem Khazem
  *
  * This file is part of smid.
@@ -17,12 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-let debug = ref false
+module L = List
 
-let loops = ref true
 
-let run_length = ref 200
 
-let include_dir = ref "."
+val map : ?rev:bool -> ('a -> 'b) -> 'a list -> 'b list
 
-let fsa_file = ref None
+
+val concat : ?rev:bool -> 'a list list -> 'a list
