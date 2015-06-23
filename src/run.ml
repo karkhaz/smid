@@ -21,7 +21,6 @@
 module F = FSA
 module S = String
 module L = List
-module C = Config
 module U = Util
 module TR = TRList
 module J = Yojson
@@ -57,9 +56,6 @@ type action = KeyAction of string
             | HookAction of state_hook
             | StateChangeAction of state_change
             | DelayAction of float
-              (** List of key * value pairs *)
-            | DebugAction of debug_info list
-            | PrintAction of string
 
 type run = action list
 
@@ -127,7 +123,7 @@ let run_of fsa run_length =
     in let transs = fake_trans :: transs
     in let rec to_actions transs acc =
       let mk_delay () =
-        (Random.float 10.0) +. 2.0
+        DelayAction ((Random.float 10.0) +. 2.0)
       in let add_hooks state pre_or_post actions =
         let hooks = hooks_of state pre_or_post
         in if L.length hooks = 0
@@ -136,11 +132,11 @@ let run_of fsa run_length =
       in let add_actions fsa_acts run_acts =
         L.fold_left (fun run_acts fsa_act ->
           let fsa_acts = match fsa_act with
-            | F.KeysAction keys -> L.map (fun key ->
+            | F.KeysAction keys -> (L.map (fun key ->
                 KeyAction key
-            ) (L.rev keys)
+            ) (L.rev keys))
             | F.TypeAction {F.fname;F.text} ->
-                [ TypeAction {fname;    text} ]
+                [ TypeAction {fname;  text} ]
             | F.MoveAction {F.region;F.sx;F.sy;F.ex;F.ey} ->
                 [ MoveAction {region;sx;sy;ex;ey} ]
             | F.MoveRelAction {F.region;F.sx;F.sy;F.ex;F.ey} ->
@@ -150,12 +146,15 @@ let run_of fsa run_length =
             | F.ScrollAction (F.Up,   i) -> [ ScrollAction (Up,   i) ]
             | F.ScrollAction (F.Down, i) -> [ ScrollAction (Down, i) ]
             | F.ShellAction s -> [ ShellAction s ]
-          in fsa_acts @ run_acts
+          in let with_delays = L.flatten(L.map(fun action ->
+            [mk_delay(); action]
+          ) fsa_acts)
+          in with_delays @ run_acts
         ) run_acts fsa_acts
       in match transs with
         | [] -> acc
         | {F.src;F.acts;F.dst;_} :: t -> let actions = []
-          in let actions = DelayAction (mk_delay ()) :: actions
+          in let actions = (mk_delay ()) :: actions
           in let actions = add_hooks dst `Pre  actions
           in let actions = add_actions acts actions
           in let actions = add_hooks src `Post actions
@@ -181,7 +180,7 @@ let run_of fsa run_length =
 let to_json run =
   let to_json = function
     | KeyAction key ->
-        let head = ("type", `String "keys")
+        let head = ("type", `String "key")
         in let key = `String key
         in let body = ("body", key)
         in `Assoc [head; body]
@@ -276,21 +275,12 @@ let to_json run =
         in let body = `Float d
         in let body = ("body", body)
         in `Assoc [head; body]
-    | PrintAction str ->
-        let head = ("type", `String "print")
-        in let body = `String str
-        in let body = ("body", body)
-        in `Assoc [head; body]
-    | DebugAction lst ->
-        let head = ("type", `String "debug")
-        in let body = `Assoc (L.map (fun (k, v) ->
-          k, `String v
-        ) lst)
-        in let body = ("body", body)
-        in `Assoc [head; body]
   in let lst = `List (L.map (fun act -> to_json act) run)
   in let json = `Assoc [("actions", lst)]
   in J.pretty_to_string json
+
+
+
 
 
 
