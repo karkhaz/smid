@@ -2,7 +2,7 @@ initial start
 final quit
 
 start --
-  shel { WINDOW_NAME="\- Iceweasel"}
+  winc "\- Iceweasel"
   shel { iceweasel & }
   shel { sleep 3 }
 --> pre
@@ -68,11 +68,11 @@ all -- keys [ Control+t ] --> start
 region history_list = (200, 60, 600, 200)
 
 history_window --
-  shel { WINDOW_NAME="Library" }
+  winc "Library"
 --> pre
 
 history_window --
-  shel { WINDOW_NAME="\- Iceweasel" }
+  winc "\- Iceweasel"
 --> post
 
 all -- keys [ Control+Shift+h ] --> history_window

@@ -323,8 +323,8 @@ let to_json fsa run_length =
  * by smid, such as printing statuses or waiting for delays. These
  * things get handled individually in to_script or execute, not here.
  *)
-let command_of action =
-  let xsearch = "xdotool search --name \"$WINDOW_NAME\" "
+let command_of action window =
+  let xsearch = "xdotool search --name \"" ^ window ^ "\" "
   in match action with
     | KeyAction key ->
         xsearch ^ "key --window %1 \""  ^ key  ^ "\""
@@ -352,7 +352,7 @@ let command_of action =
 
 
 (* Debug information for actions, as strings *)
-let comment_on = function
+let comment_of = function
   | WindowChange win ->
       "Changing window target to <" ^ win ^ ">"
   | KeyAction key ->
@@ -397,30 +397,51 @@ let comment_on = function
       sprintf "Waiting for approx %2.3fs" n
 
 
-let action_pair action = (command_of action), (comment_on action)
-
+(* Return a list of pairs of action * current_window (as a string)
+ * given a list of actions. As we go through the actions, the window
+ * might sometimes change.
+ *)
+let window_pairs actions =
+  let rec get_first_window actions =
+    match actions with
+      | [] -> failwith "No window found"
+      | WindowChange win :: _ -> win
+      | h :: t -> get_first_window t
+  in let rec build_list actions current_window acc =
+    match actions with
+      | [] -> L.rev acc
+      | h :: t -> let new_win = match h with
+        | WindowChange win -> win
+        | _ -> current_window
+      in let new_acc = (h, new_win) :: acc
+      in build_list t new_win new_acc
+  in let first_window = get_first_window actions
+  in build_list actions first_window []
 
 
 let to_script fsa run_length =
   let run = run_of fsa run_length
-  in "#!/bin/bash\n\n" ^
-  L.fold_left (fun acc line ->
+  in let window_pairs = window_pairs run
+  in let lines = (L.flatten (
+      L.map(fun (action, window) -> match action with
+        | DelayAction time -> [
+            "echo \"" ^ comment_of action ^ "\"";
+            "sleep "  ^ string_of_float time
+          ]
+        | a ->
+            let command = command_of a window
+            in let comment = comment_of a
+             in [
+               "echo \"" ^ comment ^ "\"";
+               command;
+             ]
+      ) window_pairs
+    )
+  )
+  in let script = L.fold_left (fun acc line ->
     acc ^ "\n" ^ line
-  ) ""  (L.flatten (
-          L.map(fun action -> match action with
-            | DelayAction time as a -> let _, comment = action_pair a
-              in [
-                "echo \"" ^ comment ^ "\"";
-                "sleep "  ^ string_of_float time
-              ]
-            | a -> let command, comment = action_pair a
-               in [
-                 "echo \"" ^ comment ^ "\"";
-                 command;
-               ]
-          ) run
-        )
-  ) ^ "\n"
+  ) "" lines
+  in "#!/bin/bash\n\n" ^ script ^ "\n"
 
 
 
