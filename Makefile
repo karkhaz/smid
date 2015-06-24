@@ -57,7 +57,7 @@ src/$(BIN): $(SRC)
 $(TMP_DIR)/%.dot: state-machines/%.sm $(wildcard support-files/%/*) $(BIN)
 	@echo Generating $(notdir $@)
 	@mkdir -p $(TMP_DIR)
-	@./$(BIN) -d --include-dir support-files/$(notdir $(basename $@)) $< > $@
+	@./$(BIN) dot --include-dir support-files/$(notdir $(basename $@)) $< > $@
 
 images/%.png: $(TMP_DIR)/%.dot
 	@echo Generating $@
@@ -103,7 +103,7 @@ SHOULD_PASS=$(wildcard tests/should_pass/*.sm)
 test: $(SHOULD_PASS) $(SHOULD_FAIL)
 
 tests/should_fail/%.sm: $(BIN)
-	@! ./$(BIN) -c $@ 2>/dev/null || echo "Unexpected pass:" $(notdir $@)
+	@! ./$(BIN) compile $@ 2>/dev/null || echo "Unexpected pass:" $(notdir $@)
 
 tests/should_pass/%.sm: $(BIN)
-	@./$(BIN) -c $@ || echo "Unexpected fail: " $(notdir $@)
+	@./$(BIN) compile $@ || echo "Unexpected fail: " $(notdir $@)

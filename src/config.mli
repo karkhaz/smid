@@ -26,3 +26,12 @@ val run_length : int ref
 val include_dir : string ref
 
 val fsa_file : string option ref
+
+type mode = CompileOnly
+          | DOT
+          | Stats
+          | Script
+          | JSON
+          | Execute
+
+val mode : mode option ref

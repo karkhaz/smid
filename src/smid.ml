@@ -24,43 +24,20 @@ module C = Config
 module FR = FileRep
 open FSA
 
-type mode = CompileOnly
-          | DOT
-          | Stats
-          | Script
-          | JSON
-          | Execute
-
-let mode = ref None
-
 let sanity_check = ref true
 
 let max_depth = ref 5
 
 let usage_msg =
-"Usage: smid -c [OPTION...] SM_FILE
-       smid -d [OPTION...] SM_FILE
-       smid -r [OPTION...] SM_FILE
-       smid -j [OPTION...] SM_FILE
-       smid -s [OPTION...] SM_FILE
-"
+"USAGE:
+  smid compile [OPTION...] SM_FILE
+  smid dot     [OPTION...] SM_FILE
+  smid script  [OPTION...] SM_FILE
+  smid json    [OPTION...] SM_FILE
+
+OPTIONS:"
 
 let rec _speclist = [
-  ("-c", Unit (function () -> set_mode CompileOnly),
-   " Check syntax of SM file only")
-  ;
-  ("-d", Unit (function () -> set_mode DOT),
-   " Print out a DOT representation of an SM file")
-  ;
-  ("-r", Unit (function () -> set_mode Script),
-   " Generate run script")
-  ;
-  ("-j", Unit (function () -> set_mode JSON),
-   " Print out a single JSON-formatted run")
-  ;
-  ("-s", Unit (function () -> set_mode Stats),
-   " Print out SM statistics")
-  ;
   ("--loops", Unit (function () -> C.loops := false),
    " With -d, make transitions to the same state loop back on themselves")
   ;
@@ -68,7 +45,7 @@ let rec _speclist = [
    " Specify where additional data files are located")
   ;
   ("--run-length", Set_int C.run_length,
-   (sprintf " With -r, generate runs of at least length <n>. \
+   (sprintf " Generate runs of at least length <n>. \
    Default: %d" !C.run_length))
   ;
   ("--debug", Unit (function () -> C.debug := true),
@@ -79,15 +56,24 @@ let rec _speclist = [
   ;
 ]
 and speclist () = align _speclist
-and set_mode new_mode = match !mode with
-  | None -> mode := Some new_mode
+and set_mode new_mode = match !C.mode with
+  | None -> C.mode := Some new_mode
   | _    -> usage (speclist ()) usage_msg; exit 1
 
-let anon_fun str = match !C.fsa_file with
-  | None -> C.fsa_file := Some str; ()
-  | _    -> usage (speclist ()) usage_msg; exit 1
+let anon_fun str = match !C.mode with
+  | Some _ -> (
+      match !C.fsa_file with
+        | None -> C.fsa_file := Some str; ()
+        | _    -> usage (speclist ()) usage_msg; exit 1
+  )
+  | None -> match str with
+    | "check"   | "c" -> set_mode C.CompileOnly
+    | "dot"     | "d" -> set_mode C.DOT
+    | "script"  | "s" -> set_mode C.Script
+    | "json"    | "j" -> set_mode C.JSON
+    | _    -> usage (speclist ()) usage_msg; exit 1
 
-let check_args () = match !C.fsa_file, !mode with
+let check_args () = match !C.fsa_file, !C.mode with
   | None, _
   | _, None -> usage (speclist ()) usage_msg; exit 1
   | _, _    -> ()
@@ -136,7 +122,7 @@ let () =
     else true
   in parse (speclist ()) anon_fun usage_msg;
   Random.self_init ();
-  match !C.fsa_file, !mode with
+  match !C.fsa_file, !C.mode with
     | None, _
     | _, None -> usage (speclist ()) usage_msg; exit 1
     | Some file, Some mode    ->
@@ -147,21 +133,21 @@ let () =
         in if not (check_fsa fsa)
         then exit 1
         else match mode with
-          | CompileOnly ->
+          | C.CompileOnly ->
               exit 0
-          | DOT ->
+          | C.DOT ->
               printf "%s" (dot_of fsa)
             ; exit 0
-          | Stats ->
+          | C.Stats ->
               printf "%s" (stats_of fsa)
             ; exit 0
-          | Script ->
+          | C.Script ->
               printf "%s" (Run.to_script fsa !C.run_length)
             ; exit 0
-          | JSON ->
+          | C.JSON ->
               printf "%s" (Run.to_json fsa !C.run_length)
             ; exit 0
-          | Execute ->
+          | C.Execute ->
             let result = Run.execute fsa !C.run_length
             in match result with
               | Run.Success -> exit 0

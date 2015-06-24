@@ -26,3 +26,12 @@ let run_length = ref 200
 let include_dir = ref "."
 
 let fsa_file = ref None
+
+type mode = CompileOnly
+          | DOT
+          | Stats
+          | Script
+          | JSON
+          | Execute
+
+let mode = ref None
