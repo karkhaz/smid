@@ -347,7 +347,11 @@ let command_of action window =
       ) in xsearch ^ "click --clearmodifiers --repeat "
       ^ string_of_int dist  ^ " " ^ button
     | ShellAction cmd -> cmd
-    | _ -> ""
+    | HookAction _
+    | StateChangeAction _
+    | DelayAction _
+    | WindowChange _
+    -> ""
 
 
 
@@ -397,6 +401,7 @@ let comment_of = function
       sprintf "Waiting for approx %2.3fs" n
 
 
+
 (* Return a list of pairs of action * current_window (as a string)
  * given a list of actions. As we go through the actions, the window
  * might sometimes change.
@@ -417,6 +422,7 @@ let window_pairs actions =
       in build_list t new_win new_acc
   in let first_window = get_first_window actions
   in build_list actions first_window []
+
 
 
 let to_script fsa run_length =
