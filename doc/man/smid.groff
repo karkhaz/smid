@@ -1,0 +1,96 @@
+.TH SMID 1 "24 June 2015"
+
+.SH NAME
+smid \- a black box tester
+
+
+.SH SYNOPSIS
+
+\fBsmid\fP check   [ OPTION... ] \fISMID_FILE\fP
+.br
+\fBsmid\fP dot     [ OPTION... ] \fISMID_FILE\fP
+.br
+\fBsmid\fP script  [ OPTION... ] \fISMID_FILE\fP
+.br
+\fBsmid\fP execute [ OPTION... ] \fISMID_FILE\fP
+.br
+\fBsmid\fP json    [ OPTION... ] \fISMID_FILE\fP
+
+
+.SS Options
+
+\fB--include-dir\fP \fIdir\fP
+.br
+\fB--run-length\fP \fIn\fP
+.br
+\fB--loops\fP
+.br
+\fB--debug\fP
+.br
+\fB--no-sanity-check\fP
+
+
+.SH DESCRIPTION
+\fBsmid\fP performs an operation on a file written using smid syntax.
+An invocation of \fBsmid\fP must contain exactly one operation,
+followed by optional options and the name of exactly one file.
+
+
+.SS Operations
+
+.TP
+\fBcheck\fP
+Exits normally iff the syntax of \fISMID_FILE\fP is correct.
+
+.TP
+\fBdot\fP
+Prints a Graphviz DOT-formatted graph of the state machine described
+in \fISMID_FILE\fP.
+
+.TP
+\fBscript\fP
+Prints a Bash script. When run, the script executes a single run over
+the state machine described in \fISMID_FILE\fP.
+
+.TP
+\fBjson\fP
+Prints a JSON-formatted run over the state machine described in
+\fISMID_FILE\fP.
+
+.TP
+\fBexecute\fP
+Executes a single run described in \fISMID_FILE\fP.
+
+
+.SS Options
+
+.TP
+\fB--include-dir\fP \fIdir\fP
+Name a directory where additional data files mentioned in
+\fISMID_FILE\fP are located. Default: \fI"."\fP
+
+.TP
+\fB--run-length\fP \fIn\fP
+With operations \fBscript\fP, \fBexecute\fP and \fBjson\fP: Generate
+runs over at least \fIN\fP transitions on the state machine. Default:
+\fI200\fP.
+
+.TP
+\fB--loops\fP
+With operation \fBdot\fP, make transitions that stay on the same state
+loop back on themselves instead of creating a new state for clarity.
+
+.TP
+\fB--debug\fP
+Print debugging output while lexing.
+
+.TP
+\fB--no-sanity-check\fP
+Turn off strict checking of smid files. This may be useful when
+writing examples which are intentionally incomplete. The state machine
+that results from parsing a smid file without sanity checks may be
+incomplete or insensible. Note that syntax checking still happens even
+if this option is specified.
+
+.SH SEE ALSO
+xdotool(1)
