@@ -434,8 +434,7 @@ let stats_of {states; inits; finals; transs; hooks} =
 
 
 
-(* Return a dot graph of an FSA *)
-let dot_of fsa =
+let real_dot_of fsa from_to =
   let dot_escape str =
     str |> S.escaped
   in let string_of_coords sx sy ex ey =
@@ -501,13 +500,40 @@ let dot_of fsa =
         if dst = src && !C.loops
         then "loop_to_" ^ dst
         else dst
+      in let edge_attributes = match from_to with
+        | None -> ""
+        | Some (from, too) -> (
+          (*
+          if from = src   &&   too = dst
+          then "penwidth=7; color=\"blue\"; fontcolor=\"blue\";"
+          else
+            *)
+            ""
+        )
       in src ^ " -> " ^ dst
-       ^ " [label=\"" ^ acts ^ "\"];"
+       ^ " [label=\"" ^ acts ^ "\"; " ^ edge_attributes ^ "];"
     in L.map dot_of_t transs
+  in let dot_of_ss states =
+    match from_to with
+      | None -> []
+      | Some (from, too) ->
+          let highlight color state =
+            state ^ "[style=\"filled\"; color=\"" ^ color ^ "\";]"
+          in let states = L.filter
+          (fun state -> state = from || state = too) states
+          in L.map (fun state ->
+            if state = from
+            then highlight "purple" state
+            else if state = too
+            then highlight "blue" state
+            else (* impossible, we only selected from and to states *)
+              failwith "Bad logic"
+          ) states
   in let lines =
     dot_of_is fsa.inits
     @ dot_of_fs fsa.finals
     @ dot_of_ts fsa.transs
+    @ dot_of_ss fsa.states
   in let lines = L.sort_uniq compare lines
   in let body = L.fold_left (fun acc line ->
     "  " ^ line ^ "\n" ^ acc
@@ -517,5 +543,15 @@ let dot_of fsa =
 
 
 
+let dot_of fsa =
+  real_dot_of fsa None
+
+
+
 let transition_graphs fsa cont =
-  ()
+  L.iter (fun from_state ->
+    L.iter (fun to_state ->
+      let graph = real_dot_of fsa (Some (from_state, to_state))
+      in cont graph (from_state, to_state)
+    ) fsa.states
+  ) fsa.states
