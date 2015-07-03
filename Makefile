@@ -104,7 +104,7 @@ SHOULD_PASS=$(wildcard tests/should_pass/*.sm)
 test: $(SHOULD_PASS) $(SHOULD_FAIL)
 
 tests/should_fail/%.sm: $(BIN)
-	@! ./$(BIN) compile $@ 2>/dev/null || echo "Unexpected pass:" $(notdir $@)
+	@! ./$(BIN) check $@ 2>/dev/null || echo "Unexpected pass:" $(notdir $@)
 
 tests/should_pass/%.sm: $(BIN)
-	@./$(BIN) compile $@ || echo "Unexpected fail: " $(notdir $@)
+	@./$(BIN) check $@ || echo "Unexpected fail: " $(notdir $@)

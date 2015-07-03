@@ -30,7 +30,7 @@ let max_depth = ref 5
 
 let usage_msg =
 "USAGE:
-  smid compile [OPTION...] SM_FILE
+  smid check   [OPTION...] SM_FILE
   smid dot     [OPTION...] SM_FILE
   smid script  [OPTION...] SM_FILE
   smid json    [OPTION...] SM_FILE
