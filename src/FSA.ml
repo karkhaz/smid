@@ -434,7 +434,7 @@ let stats_of {states; inits; finals; transs; hooks} =
 
 
 
-let real_dot_of fsa from_to =
+let real_dot_of fsa current_state =
   let dot_escape str =
     str |> S.escaped
   in let string_of_coords sx sy ex ey =
@@ -500,34 +500,17 @@ let real_dot_of fsa from_to =
         if dst = src && !C.loops
         then "loop_to_" ^ dst
         else dst
-      in let edge_attributes = match from_to with
-        | None -> ""
-        | Some (from, too) -> (
-          (*
-          if from = src   &&   too = dst
-          then "penwidth=7; color=\"blue\"; fontcolor=\"blue\";"
-          else
-            *)
-            ""
-        )
       in src ^ " -> " ^ dst
-       ^ " [label=\"" ^ acts ^ "\"; " ^ edge_attributes ^ "];"
+       ^ " [label=\"" ^ acts ^ "\"; ];"
     in L.map dot_of_t transs
   in let dot_of_ss states =
-    match from_to with
+    match current_state with
       | None -> []
-      | Some (from, too) ->
-          let highlight color state =
-            state ^ "[style=\"filled\"; color=\"" ^ color ^ "\";]"
-          in let states = L.filter
-          (fun state -> state = from || state = too) states
+      | Some current ->
+          let states = L.filter
+          (fun state -> state = current) states
           in L.map (fun state ->
-            if state = from
-            then highlight "purple" state
-            else if state = too
-            then highlight "blue" state
-            else (* impossible, we only selected from and to states *)
-              failwith "Bad logic"
+            state ^ "[style=\"filled\"; color=\"blue\";]"
           ) states
   in let lines =
     dot_of_is fsa.inits
@@ -549,9 +532,7 @@ let dot_of fsa =
 
 
 let transition_graphs fsa cont =
-  L.iter (fun from_state ->
-    L.iter (fun to_state ->
-      let graph = real_dot_of fsa (Some (from_state, to_state))
-      in cont graph (from_state, to_state)
-    ) fsa.states
+  L.iter (fun current_state ->
+      let graph = real_dot_of fsa (Some current_state)
+      in cont graph current_state
   ) fsa.states

@@ -105,4 +105,4 @@ val dot_of : fsa -> string
  *  (source, dest) of the transition.
  *)
 val transition_graphs :
-  fsa -> (string -> (string * string) -> unit) -> unit
+  fsa -> (string -> string -> unit) -> unit

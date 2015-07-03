@@ -129,8 +129,8 @@ eprintf "Specify where to write DOT files with --output-directory.\n%!";
 exit 1
     )
     | Some d -> d
-  in let print_dot graph (from_state, to_state) =
-    let f_name = from_state ^ "-to-" ^ to_state ^ ".dot"
+  in let print_dot graph current_state =
+    let f_name = current_state ^ ".dot"
     in let f_name = out_dir ^ "/" ^ f_name
     in let out_chan = open_out f_name in (
       fprintf out_chan "%s\n" graph;
