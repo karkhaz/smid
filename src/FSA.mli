@@ -98,3 +98,11 @@ val stats_of : fsa -> string
 
 (** Return a Graphviz DOT-formatted representation of the fsa *)
 val dot_of : fsa -> string
+
+(** For each transition in the FSA, generate a Graphviz DOT-formatted
+ *  representation of the FSA with that transition highlighted. Call
+ *  the continuation function with the DOT graph, plus the pair
+ *  (source, dest) of the transition.
+ *)
+val transition_graphs :
+  fsa -> (string -> (string * string) -> unit) -> unit

@@ -29,9 +29,12 @@ val fsa_file : string option ref
 
 type mode = CompileOnly
           | DOT
+          | TransitionGraphs
           | Stats
           | Script
           | JSON
           | Execute
 
 val mode : mode option ref
+
+val output_dir : string option ref

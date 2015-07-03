@@ -30,16 +30,17 @@ let max_depth = ref 5
 
 let usage_msg =
 "USAGE:
-  smid compile [OPTION...] SM_FILE
-  smid dot     [OPTION...] SM_FILE
-  smid script  [OPTION...] SM_FILE
-  smid json    [OPTION...] SM_FILE
+  smid compile      [OPTION...] SM_FILE
+  smid dot          [OPTION...] SM_FILE
+  smid transitions  [OPTION...] SM_FILE
+  smid script       [OPTION...] SM_FILE
+  smid json         [OPTION...] SM_FILE
 
 OPTIONS:"
 
 let rec _speclist = [
   ("--loops", Unit (function () -> C.loops := false),
-   " With -d, make transitions to the same state loop back on themselves")
+   " With dot, make transitions to the same state loop back on themselves")
   ;
   ("--include-dir", Set_string C.include_dir,
    " Specify where additional data files are located")
@@ -53,6 +54,9 @@ let rec _speclist = [
   ;
   ("--no-sanity-check", Unit (function () -> sanity_check := false),
    " Turn off strict checking of SM file")
+  ;
+  ("--output-dir", String (function s -> C.output_dir := Some s),
+   " Directory to write transition DOT files")
   ;
 ]
 and speclist () = align _speclist
@@ -71,6 +75,7 @@ let anon_fun str = match !C.mode with
     | "dot"     | "d" -> set_mode C.DOT
     | "script"  | "s" -> set_mode C.Script
     | "json"    | "j" -> set_mode C.JSON
+    | "transitions"    | "t" -> set_mode C.TransitionGraphs
     | _    -> usage (speclist ()) usage_msg; exit 1
 
 let check_args () = match !C.fsa_file, !C.mode with
@@ -115,6 +120,25 @@ let get_fsa fsa_file =
       eprintf "Error: %s\n" e;
       exit 1
 
+
+let make_transition_graphs fsa =
+  let out_dir = match !C.output_dir with
+    | None -> (
+eprintf "No output directory specified.\n";
+eprintf "Specify where to write DOT files with --output-directory.\n%!";
+exit 1
+    )
+    | Some d -> d
+  in let print_dot graph (from_state, to_state) =
+    let f_name = from_state ^ "-to-" ^ to_state ^ ".dot"
+    in let f_name = out_dir ^ "/" ^ f_name
+    in let out_chan = open_out f_name in (
+      fprintf out_chan "%s\n" graph;
+      close_out out_chan
+    )
+  in transition_graphs fsa print_dot
+
+
 let () =
   let check_fsa fsa =
     if !sanity_check
@@ -146,6 +170,9 @@ let () =
             ; exit 0
           | C.JSON ->
               printf "%s" (Run.to_json fsa !C.run_length)
+            ; exit 0
+          | C.TransitionGraphs ->
+            make_transition_graphs fsa
             ; exit 0
           | C.Execute ->
             let result = Run.execute fsa !C.run_length

@@ -514,3 +514,8 @@ let dot_of fsa =
       ) "" lines
   in "digraph G {\n  node [shape=box];\nrankdir=LR;\n  "
     ^ (S.trim body) ^ "\n}\n"
+
+
+
+let transition_graphs fsa cont =
+  ()

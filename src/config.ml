@@ -29,9 +29,12 @@ let fsa_file = ref None
 
 type mode = CompileOnly
           | DOT
+          | TransitionGraphs
           | Stats
           | Script
           | JSON
           | Execute
 
 let mode = ref None
+
+let output_dir = ref None
