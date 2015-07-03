@@ -72,12 +72,12 @@ Name a directory where additional data files mentioned in
 .TP
 \fB--run-length\fP \fIn\fP
 With operations \fBscript\fP, \fBexecute\fP and \fBjson\fP: Generate
-runs over at least \fIN\fP transitions on the state machine. Default:
+runs over at least \fIn\fP transitions on the state machine. Default:
 \fI200\fP.
 
 .TP
 \fB--loops\fP
-With operation \fBdot\fP, make transitions that stay on the same state
+With operation \fBdot\fP: Make transitions that stay on the same state
 loop back on themselves instead of creating a new state for clarity.
 
 .TP

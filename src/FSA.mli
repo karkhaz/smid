@@ -21,14 +21,26 @@
 type state = string
 
 type type_action = {
+  (** Some filename if the string came from an external file, i.e. the
+   * user specified the `line' action.
+   * None if the string was supplied verbatim, i.e. the user specified
+   * the `text' action.
+   *)
   fname: string option;
-  text:  string;
+  text:  string;        (** The text to be 'typed'. *)
 }
 
+(** Mouse clicks *)
 type click_side = Left | Right
+
+(** Mouse scrolls *)
 type scroll_direction = Up | Down
 
+(** Mouse movement *)
 type location = {
+  (** Some name if the location was specified in the smid file as a
+   * region. None if it was specified as a literal coordinate.
+   *)
   region: string option;
   sx: int;
   sy: int;

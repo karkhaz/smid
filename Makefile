@@ -37,7 +37,8 @@ CFLAGS=-safe-string,-g,-warn-error,+A
 FLAGS= -quiet -r -j 0 -I src -use-ocamlfind \
 			 -cflags $(CFLAGS) -libs $(LIBS)
 
-SRC=$(wildcard src/*.ml) $(wildcard src/*.mll) $(wildcard src/*.mly)
+SRC=$(wildcard src/*.ml) $(wildcard src/*.mll) $(wildcard src/*.mly) \
+		$(wildcard src/*.mli)
 
 TARGETS=smid $(SMID_DIAGRAMS) documentation
 
