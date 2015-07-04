@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+PERCENT := %
+
 DOT=circo
 XDOTOOL=xdotool
 AWK=awk
@@ -28,7 +30,8 @@ OPAM=opam
 SMID_FILES=$(wildcard state-machines/*.sm)
 SMID_DIAGRAMS=$(patsubst state-machines/%.sm,images/%.png,$(SMID_FILES))
 
-INDIVIDUAL_STATES=$(patsubst state-machines/%.sm,states/%/.states,$(SMID_FILES))
+INDIVIDUAL_STATES=$(patsubst state-machines/%.sm,\
+images/states/%/.states,$(SMID_FILES))
 
 INDIVIDUAL_PNGS=$(shell ./get_states.sh)
 
@@ -60,7 +63,7 @@ src/$(BIN): $(SRC)
 	@$(OCB) $(FLAGS) src/$(BIN)
 
 
-$(TMP_DIR)/%.dot: state-machines/%.sm $(wildcard support-files/%/*) $(BIN)
+$(TMP_DIR)/%.dot: state-machines/%.sm support-files/%/* $(BIN)
 	@echo Generating $(notdir $@)
 	@mkdir -p $(TMP_DIR)
 	@./$(BIN) dot --include-dir support-files/$(notdir $(basename $@)) $< > $@
@@ -70,15 +73,14 @@ images/%.png: $(TMP_DIR)/%.dot
 	@mkdir -p $(dir $@)
 	@$(DOT) -Tpng $<  >  $@
 
-states/%/.states: state-machines/%.sm $(BIN) \
-	$(wildcard support-files/%/*)
+images/states/%/.states: state-machines/%.sm $(BIN) support-files/%/*
 	@mkdir -p $(dir $@)
 	@./$(BIN) states --include-dir support-files/$(notdir $(basename $<)) $< > $@
 	@./$(BIN) transitions --include-dir support-files/$(notdir $(basename $<)) \
 		--output-dir $(dir $@) $<
 	@make
 
-states/%.png: states/%.dot
+images/states/%.png: images/states/%.dot
 	@circo -Tpng $< > $@
 
 
@@ -89,7 +91,7 @@ clean:
 	@-rm -rf  src/$(BIN)  _build  images/*
 
 .PHONY: vimfiles
-vimfiles: $(wildcard vim/*/*)
+vimfiles: vim/*/*
 	@mkdir -p ~/.vim/ftdetect
 	@mkdir -p ~/.vim/syntax
 	@cp vim/syntax/sm.vim ~/.vim/syntax
