@@ -157,7 +157,7 @@ let run_of fsa run_length =
     in let transs = fake_trans :: transs
     in let rec to_actions transs acc =
       let mk_delay () =
-        DelayAction ((Random.float 5.0) +. 0.5)
+        DelayAction ((Random.float 2.0) +. 0.1)
       in let add_actions fsa_acts run_acts =
         L.fold_left (fun run_acts fsa_act ->
           let fsa_acts = fsa_act_to_acts fsa_act
