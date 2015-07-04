@@ -28,6 +28,7 @@ val include_dir : string ref
 val fsa_file : string option ref
 
 type mode = CompileOnly
+          | StateList
           | DOT
           | TransitionGraphs
           | Stats

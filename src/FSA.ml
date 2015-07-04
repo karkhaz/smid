@@ -536,3 +536,10 @@ let transition_graphs fsa cont =
       let graph = real_dot_of fsa (Some current_state)
       in cont graph current_state
   ) fsa.states
+
+
+
+let states_of fsa =
+  L.fold_left (fun acc state ->
+    state ^ "\n" ^ acc
+  ) "" fsa.states

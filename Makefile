@@ -28,6 +28,10 @@ OPAM=opam
 SMID_FILES=$(wildcard state-machines/*.sm)
 SMID_DIAGRAMS=$(patsubst state-machines/%.sm,images/%.png,$(SMID_FILES))
 
+INDIVIDUAL_STATES=$(patsubst state-machines/%.sm,states/%/.states,$(SMID_FILES))
+
+INDIVIDUAL_PNGS=$(shell ./get_states.sh)
+
 TMP_DIR=/tmp/smid
 
 BIN=smid.native
@@ -40,7 +44,8 @@ FLAGS= -quiet -r -j 0 -I src -use-ocamlfind \
 SRC=$(wildcard src/*.ml) $(wildcard src/*.mll) $(wildcard src/*.mly) \
 		$(wildcard src/*.mli)
 
-TARGETS=smid $(SMID_DIAGRAMS) documentation
+TARGETS=smid $(SMID_DIAGRAMS) documentation \
+				$(INDIVIDUAL_STATES) $(INDIVIDUAL_PNGS)
 
 default: $(TARGETS)
 
@@ -64,6 +69,17 @@ images/%.png: $(TMP_DIR)/%.dot
 	@echo Generating $@
 	@mkdir -p $(dir $@)
 	@$(DOT) -Tpng $<  >  $@
+
+states/%/.states: state-machines/%.sm $(BIN) \
+	$(wildcard support-files/%/*)
+	@mkdir -p $(dir $@)
+	@./$(BIN) states --include-dir support-files/$(notdir $(basename $<)) $< > $@
+	@./$(BIN) transitions --include-dir support-files/$(notdir $(basename $<)) \
+		--output-dir $(dir $@) $<
+	@make
+
+states/%.png: states/%.dot
+	@circo -Tpng $< > $@
 
 
 # Non-default targets ================================================

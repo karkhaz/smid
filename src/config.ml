@@ -28,6 +28,7 @@ let include_dir = ref "."
 let fsa_file = ref None
 
 type mode = CompileOnly
+          | StateList
           | DOT
           | TransitionGraphs
           | Stats
