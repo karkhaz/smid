@@ -32,9 +32,7 @@ type mode = CompileOnly
           | DOT
           | TransitionGraphs
           | Stats
-          | Script
           | JSON
-          | Execute
 
 let mode = ref None
 

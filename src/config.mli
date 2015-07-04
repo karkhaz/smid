@@ -32,9 +32,7 @@ type mode = CompileOnly
           | DOT
           | TransitionGraphs
           | Stats
-          | Script
           | JSON
-          | Execute
 
 val mode : mode option ref
 

@@ -33,7 +33,6 @@ let usage_msg =
   smid compile      [OPTION...] SM_FILE
   smid dot          [OPTION...] SM_FILE
   smid transitions  [OPTION...] SM_FILE
-  smid script       [OPTION...] SM_FILE
   smid json         [OPTION...] SM_FILE
 
 OPTIONS:"
@@ -73,7 +72,6 @@ let anon_fun str = match !C.mode with
   | None -> match str with
     | "check"   | "c" -> set_mode C.CompileOnly
     | "dot"     | "d" -> set_mode C.DOT
-    | "script"  | "s" -> set_mode C.Script
     | "json"    | "j" -> set_mode C.JSON
     | "transitions"    | "t" -> set_mode C.TransitionGraphs
     (* Not publicly documented *)
@@ -170,17 +168,9 @@ let () =
           | C.Stats ->
               printf "%s" (stats_of fsa)
             ; exit 0
-          | C.Script ->
-              printf "%s" (Run.to_script fsa !C.run_length)
-            ; exit 0
           | C.JSON ->
               printf "%s" (Run.to_json fsa !C.run_length)
             ; exit 0
           | C.TransitionGraphs ->
             make_transition_graphs fsa
             ; exit 0
-          | C.Execute ->
-            let result = Run.execute fsa !C.run_length
-            in match result with
-              | Run.Success -> exit 0
-              | Run.Fail -> exit 1
