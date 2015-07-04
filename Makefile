@@ -33,7 +33,7 @@ SMID_DIAGRAMS=$(patsubst state-machines/%.sm,images/%.png,$(SMID_FILES))
 INDIVIDUAL_STATES=$(patsubst state-machines/%.sm,\
 images/states/%/.states,$(SMID_FILES))
 
-INDIVIDUAL_PNGS=$(shell ./get_states.sh)
+INDIVIDUAL_PNGS=$(shell ./scripts/get_states.sh)
 
 TMP_DIR=/tmp/smid
 
@@ -88,7 +88,7 @@ images/states/%.png: images/states/%.dot
 
 .PHONY: clean
 clean:
-	@-rm -rf  src/$(BIN)  _build  images/*
+	@-rm -rf  $(BIN)  _build  images/*
 
 .PHONY: vimfiles
 vimfiles: vim/*/*
