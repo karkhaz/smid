@@ -76,6 +76,7 @@ let anon_fun str = match !C.mode with
     | "script"  | "s" -> set_mode C.Script
     | "json"    | "j" -> set_mode C.JSON
     | "transitions"    | "t" -> set_mode C.TransitionGraphs
+    (* Not publicly documented *)
     | "states"  -> set_mode C.StateList
     | _    -> usage (speclist ()) usage_msg; exit 1
 

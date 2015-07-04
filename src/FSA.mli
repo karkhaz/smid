@@ -108,4 +108,5 @@ val transition_graphs :
   fsa -> (string -> string -> unit) -> unit
 
 
+(** A newline-separated list of the states in this FSA *)
 val states_of : fsa -> string

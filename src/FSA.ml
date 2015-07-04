@@ -533,8 +533,8 @@ let dot_of fsa =
 
 let transition_graphs fsa cont =
   L.iter (fun current_state ->
-      let graph = real_dot_of fsa (Some current_state)
-      in cont graph current_state
+    let graph = real_dot_of fsa (Some current_state)
+    in cont graph current_state
   ) fsa.states
 
 
