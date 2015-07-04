@@ -32,7 +32,6 @@ let usage_msg =
 "USAGE:
   smid check        [OPTION...] SM_FILE
   smid dot          [OPTION...] SM_FILE
-  smid transitions  [OPTION...] SM_FILE
   smid json         [OPTION...] SM_FILE
 
 OPTIONS:"
@@ -73,8 +72,8 @@ let anon_fun str = match !C.mode with
     | "check"   | "c" -> set_mode C.CompileOnly
     | "dot"     | "d" -> set_mode C.DOT
     | "json"    | "j" -> set_mode C.JSON
-    | "transitions"    | "t" -> set_mode C.TransitionGraphs
     (* Not publicly documented *)
+    | "transitions"    | "t" -> set_mode C.TransitionGraphs
     | "states"  -> set_mode C.StateList
     | _    -> usage (speclist ()) usage_msg; exit 1
 

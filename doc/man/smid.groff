@@ -6,15 +6,11 @@ smid \- a black box tester
 
 .SH SYNOPSIS
 
-\fBsmid\fP check   [ OPTION... ] \fISMID_FILE\fP
+\fBsmid\fP check          [ OPTION... ] \fISMID_FILE\fP
 .br
-\fBsmid\fP dot     [ OPTION... ] \fISMID_FILE\fP
+\fBsmid\fP dot            [ OPTION... ] \fISMID_FILE\fP
 .br
-\fBsmid\fP script  [ OPTION... ] \fISMID_FILE\fP
-.br
-\fBsmid\fP execute [ OPTION... ] \fISMID_FILE\fP
-.br
-\fBsmid\fP json    [ OPTION... ] \fISMID_FILE\fP
+\fBsmid\fP json           [ OPTION... ] \fISMID_FILE\fP
 
 
 .SS Options
@@ -48,19 +44,9 @@ Prints a Graphviz DOT-formatted graph of the state machine described
 in \fISMID_FILE\fP.
 
 .TP
-\fBscript\fP
-Prints a Bash script. When run, the script executes a single run over
-the state machine described in \fISMID_FILE\fP.
-
-.TP
 \fBjson\fP
 Prints a JSON-formatted run over the state machine described in
 \fISMID_FILE\fP.
-
-.TP
-\fBexecute\fP
-Executes a single run described in \fISMID_FILE\fP.
-
 
 .SS Options
 
