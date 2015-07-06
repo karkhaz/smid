@@ -168,7 +168,7 @@ let () =
               printf "%s" (stats_of fsa)
             ; exit 0
           | C.JSON ->
-              printf "%s" (Run.to_json fsa !C.run_length)
+              printf "%s\n" (Run.to_json fsa !C.run_length)
             ; exit 0
           | C.TransitionGraphs ->
             make_transition_graphs fsa
