@@ -319,6 +319,25 @@ a closing curly bracket inside the shell code by escaping it with a
 backslash `\}`.
 
 
+<h4 id="winc">win-change / winc</h4>
+
+    win-change  "window name"
+    winc        "window name"
+
+
+
+
+<h4 id="prob">prob</h4>
+
+    prob high
+    prob med
+    prob low
+
+
+
+<h3 id="hooks">State hooks</h3>
+
+
 <h2 id="initial-declarations">Initial states</h2>
 
 **Syntax:** The state machine's *initial state* is declared with the
