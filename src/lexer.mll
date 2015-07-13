@@ -287,10 +287,10 @@ and read_move_rel' acc = parse
                         read_move_rel' acc lexbuf
                       }
   | integer     as l  { dbs "movr" l lexbuf;
-                        read_keys' (l :: acc) lexbuf
+                        read_move_rel' (l :: acc) lexbuf
                       }
   | '-' integer as l  { dbs "movr" l lexbuf;
-                        read_keys' (l :: acc) lexbuf
+                        read_move_rel' (l :: acc) lexbuf
                       }
   | ")"         as l  { dbc "movr" l lexbuf;
                         match acc with
