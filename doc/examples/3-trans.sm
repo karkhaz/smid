@@ -1,3 +1,6 @@
 foo     -- keys [ Control+K ] --> bar
 bar baz -- keys [ Control+M ] --> foo
-bar     -- keys [ Control+U ] --> baz
+bar     --
+  keys [ Control+U ]
+  keys [ Control+L ]
+--> baz

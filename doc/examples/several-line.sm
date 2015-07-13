@@ -1,0 +1,9 @@
+address_bar --
+  text "www.startpage.com"
+  keys [ Return ]
+--> page_loaded
+
+address_bar --
+  text "www.lwn.net"
+  keys [ Return ]
+--> page_loaded

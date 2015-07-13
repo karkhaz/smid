@@ -48,6 +48,20 @@ picture of the state machine, generated with `smid -d`.
 
 <h2 id="transitions">Transitions</h2>
 
+**Example:** consider this `smid` file:
+
+<p class="block"><code>
+@import examples/3-trans.sm
+</code></p>
+![3-trans](examples/3-trans.png)
+
+If the current state is `bar`, then `smid` can either:
+
+* Send the key-press `Ctrl+M` to the application and set the current
+  state to `foo`;
+* Send the key-press `Ctrl+U` followed by `Ctrl+L` to the application
+  and set the current state to `baz`.
+
 **Syntax:** Transitions generally have the following shape:
 
     start state(s) -- list of actions --> end-state
@@ -66,20 +80,6 @@ It then picks one of those transitions at random.  It then performs
 all the actions specified in the [`action`](#actions) list of that
 transition, and finally changes the current state to the `end-state`
 of that transition.
-
-**Example:** consider this `smid` file:
-
-<p class="block"><code>
-@import examples/3-trans.sm
-</code></p>
-![3-trans](examples/3-trans.png)
-
-If the current state is `bar`, then `smid` can either:
-
-* Send the key-press `Ctrl+M` to the application and set the current
-  state to `foo`;
-* Send the key-press `Ctrl+U` to the application and set the current
-  state to `baz`.
 
 
 <h3 id="multiple">Multiple start states</h3>
@@ -144,9 +144,9 @@ states on the state machine, we could also have written
 <h3 id="actions">Actions</h3>
 
 Actions describe the ways in which `smid` can interact with your
-application. If `smid` walks over a transition, it will perform all of
-the actions specified in the transition. In the following example,
-there are two actions in the transition:
+application. If `smid` walks over a [transition](#transitions),
+it will perform all of the actions specified in that transition. In
+the following example, there are two actions in the transition:
 
 <p class="block"><code>
 @import examples/multi-action.sm
@@ -166,7 +166,7 @@ actions lined up.
     keys [ Ctrl+M  5  space  Return ]
 
 **Meaning:** The `keys` action causes `smid` to send keypresses to your
-application, as if the user had made those entered keypresses on the
+application, as if the user had entered those keypresses on the
 keyboard.
 
 **Syntax:** The keyword `keys`, followed by a space-delimited list of
@@ -185,26 +185,89 @@ plus sign `+`.
 
     text "quoted text"
 
+**Meaning:** The `text` action causes `smid` to type the quoted
+string, as if the user had typed it on the keyboard.
+
+**Syntax:** The keyword `text`, followed by a string surrounded by
+double-quotes. If you wish to include a double-quote inside the
+string, escape it with a backslash: `\"`.
+
 
 
 <h4 id="line">line</h4>
 
     line "filename"
 
+**Meaning:** The `line` action causes `smid` to read a random line
+from the file named in the quotes, and type that line as if the user
+had typed it on the keyboard.
+
+The `line` action is an alternative to writing out several transitions
+with `text` actions in the `smid` file. Instead of the following
+`smid` file:
+
+<p class="block"><code>
+@import examples/several-line.sm
+...
+</code></p>
+
+we could instead create a file `urls.lines`:
+
+    www.startpage.com
+    www.lwn.net
+    ...
+
+and then specify this single transition in `smid`:
+
+<p class="block"><code>
+@import examples/one-line.sm
+</code></p>
+
+**Syntax:** the keyword `line`, followed by a relative file path in
+double-quotes.
+
+**Usage note:** If the file does not reside in the current directory
+when you run `smid`, you can specify the directory that it is located
+in using the `--include-dir` option to `smid`.
+
 
 <h4 id="move">move</h4>
 
-    move [ x y ]
-    move [ start_x start_y end_x end_y ]
+    move ( x y )
+    move ( start_x start_y end_x end_y )
     move region_name
+
+**Meaning:** The `move` action moves the cursor to some point on the
+current window.
+
+* If given two numbers, `smid` moves the cursor to that exact
+  coordinate, where (0, 0) is the top-left of the window.
+
+* If given four numbers, `smid` moves the cursor to a random point in
+  the rectangle specified by the four numbers.
+
+* If given the name of a region, `smid` moves the cursor to some point
+  in that region.
+
+**Syntax:** The keyword `move`, followed by two or four positive
+integers in parentheses, or an identifier that names a region. If four
+integers are given, the third must be larger than the first, and the
+fourth must be larger than the second.
 
 
 
 <h4 id="move-rel">move_rel / movr</h4>
 
-    move_rel [ x y ]
-    movr     [ x y ]
+    move_rel ( x y )
+    movr     ( x y )
 
+**Meaning:** The `movr` action moves the cursor relative to its
+current location.
+
+**Syntax:** The keyword `move_rel` or its alias `movr`, followed by
+two integers in parentheses. Positive integers move the cursor
+rightward or downward, while negative integers move the cursor
+leftward or upward.
 
 
 
@@ -215,7 +278,13 @@ plus sign `+`.
     clik  ( frequency left  )
     clik  ( frequency right )
 
+**Meaning:** The `click` action simulates a mouse click.
 
+**Syntax:** The keyword `click` or its alias `clik`, followed by an
+integer and the word `left` or `right` in parentheses. The integer
+indicates how many clicks are sent (single-click, double-click, etc)
+and the `left` or `right` indicates the mouse button. The integer and
+mouse button can be in either order.
 
 
 
@@ -226,15 +295,28 @@ plus sign `+`.
     scrl   ( distance up   )
     scrl   ( distance down )
 
+**Meaning:** The `scroll` action simulates scrolling with a mouse
+wheel or trackpad.
 
+**Syntax:** The keyword `scroll` or its alias `scrl`, followed by an
+integer and the word `up` or `down` in parentheses. The integer
+indicates how far to scroll, and the `up` or `down` indicates the
+direction to scroll in. The distance and direction can be in either
+order.
 
 
 <h4 id="shell">shell / shel</h4>
 
-    shell { arbitrary shell commands}
-    shel  { arbitrary shell commands}
+    shell { arbitrary shell commands }
+    shel  { arbitrary shell commands }
 
+**Meaning:** The `shell` action causes `smid` to execute the commands
+in a shell.
 
+**Syntax:** The keyword `shell` or its alias `shel`, followed by
+arbitrary shell code surrounded by curly brackets `{}`. You may write
+a closing curly bracket inside the shell code by escaping it with a
+backslash `\}`.
 
 
 <h2 id="initial-declarations">Initial states</h2>

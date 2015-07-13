@@ -1,0 +1,4 @@
+address_bar --
+  line "urls.lines"
+  keys [ Return ]
+--> page_loaded
