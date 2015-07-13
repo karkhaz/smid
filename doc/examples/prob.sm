@@ -1,0 +1,14 @@
+foo --
+  prob high
+  keys [ Control+t ]
+--> bar
+
+foo --
+  prob med
+  keys [ Control+u ]
+--> baz
+
+foo --
+  prob low
+  keys [ Control+m ]
+--> baz

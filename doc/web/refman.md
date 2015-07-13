@@ -6,7 +6,7 @@ probably helpful, so follow the [tutorial](/smid/tutorial.html) first!
 
 ## Overview
 
-There are 5 kinds of statement in `smid`:
+There are 6 kinds of statement in `smid`:
 
 <div id="contents">
 <p>
@@ -22,6 +22,10 @@ There are 5 kinds of statement in `smid`:
 <br />
 <br />
 (transitions contain <a href="#actions">Actions</a>)
+<br />
+<br />
+<br />
+<a href="#regions">Region declarations</a>
 </p>
 </div>
 <div class="block" id="top-demo"><code>
@@ -233,8 +237,8 @@ in using the `--include-dir` option to `smid`.
 
 <h4 id="move">move</h4>
 
-    move ( x y )
-    move ( start_x start_y end_x end_y )
+    move ( x  y )
+    move ( start_x  start_y  end_x  end_y )
     move region_name
 
 **Meaning:** The `move` action moves the cursor to some point on the
@@ -242,24 +246,22 @@ current window.
 
 * If given two numbers, `smid` moves the cursor to that exact
   coordinate, where (0, 0) is the top-left of the window.
-
 * If given four numbers, `smid` moves the cursor to a random point in
   the rectangle specified by the four numbers.
-
-* If given the name of a region, `smid` moves the cursor to some point
-  in that region.
+* If given the name of a [`region`](#regions), `smid` moves the cursor
+  to some point in that region.
 
 **Syntax:** The keyword `move`, followed by two or four positive
-integers in parentheses, or an identifier that names a region. If four
-integers are given, the third must be larger than the first, and the
-fourth must be larger than the second.
+integers in parentheses, or an identifier that names a
+[`region`](#regions). If four integers are given, the third must be
+larger than the first, and the fourth must be larger than the second.
 
 
 
 <h4 id="move-rel">move_rel / movr</h4>
 
-    move_rel ( x y )
-    movr     ( x y )
+    move_rel ( x  y )
+    movr     ( x  y )
 
 **Meaning:** The `movr` action moves the cursor relative to its
 current location.
@@ -324,7 +326,25 @@ backslash `\}`.
     win-change  "window name"
     winc        "window name"
 
+**Meaning:** The `winc` action causes `smid` to direct all future
+interactions towards windows whose title matches the specified window
+name.
 
+`smid` always needs a target window for its user interactions.
+Sometimes the target window changes (for example, when opening a save
+dialog, you will want to direct new actions to the dialog window).
+
+You must add a `winc` action as a [pre-state hook](#hooks) to the
+[initial state](#initial-declarations) to tell `smid` what the
+initially-opened window of the target program is.
+
+**Example**
+<p class="block"><code>
+@import examples/winc.sm
+</code></p>
+
+**Syntax:** The keyword `win-change` or its alias `winc`, followed by
+a string in double-quotes.
 
 
 <h4 id="prob">prob</h4>
@@ -333,7 +353,21 @@ backslash `\}`.
     prob med
     prob low
 
+**Meaning:** The `prob` action changes the probability that the
+transition it resides in will be taken, compared to other transitions
+out of the same state.
 
+In the following example, if `smid` is on state `foo`:
+
+*  `smid` is more likely to do the `Ctrl+t` action than the `Ctrl+u`
+    action
+*   `smid` is more likely to do the `Ctrl+u` action than the `Ctrl+m`
+    action
+
+<p class="block"><code>
+@import examples/prob.sm
+</code></p>
+![prob](examples/prob.png)
 
 <h3 id="hooks">State hooks</h3>
 
@@ -360,3 +394,30 @@ to the end of the line.
 **Meaning:** `smid` ignores comments completely.
 
 
+<h2 id="regions">Regions</h2>
+
+    region id = ( x  y )
+    region id = ( start_x  start_y  end_x  end_y )
+
+A region is an alias for a location on the window. Often, you will
+want to direct several actions to the same coordinates or rectangle of
+the screen:
+
+<p class="block"><code>
+@import examples/coords.sm
+...
+</code></p>
+
+We can make this more readable by naming the coordinates with a
+region:
+
+<p class="block"><code>
+@import examples/region.sm
+</code></p>
+
+**Syntax:** The keyword `region`, followed by an identifier, then an
+equals sign `=`, and two or four positive integers in parentheses.
+
+**Meaning:** When a `move` action specifies a region as its
+target, `smid` will move to the coordinates of the region in the same
+way described in the section on [`move`](#move).

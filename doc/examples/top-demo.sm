@@ -8,3 +8,5 @@ nice_state --
   text  "The user types something"
   click (1 right)
 --> naughty_state
+
+region zork = ( 30 110 50 145 )

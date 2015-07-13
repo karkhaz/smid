@@ -1,0 +1,9 @@
+all --
+  keys [ Control+Shift+H ]
+  winc "History"
+--> history_window
+
+document --
+  keys [ Control+S ]
+  winc "Save"
+--> save_dialog

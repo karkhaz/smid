@@ -1,0 +1,15 @@
+region file_menu = ( 5 10 )
+
+random_place --
+  move file_menu
+  clik ( 1 left )
+  movr ( 0  30  )
+  clik ( 1 left )
+--> save_dialog
+
+random_place --
+  move file_menu
+  clik ( 1 left )
+  movr ( 0  40  )
+  clik ( 1 left )
+--> print_dialog
