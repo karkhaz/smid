@@ -46,8 +46,15 @@ transforms = [
   '<span class="sm-keyword">\k<kw></span>'
 ],
 [
+  /(?<prob>(
+    high|med|low
+    ))/x,
+  '<span class="sm-literal">\k<prob></span>'
+],
+[
   /(?<kw>(
-    keys|text|line|click|clik|scroll|scrl|move|move-rel|movr|prob
+    keys|text|line|click|clik|scroll|scrl|move|move-rel|movr|prob|
+    winc|win-change
     ))/x,
   '<span class="sm-action">\k<kw></span>'
 ],
