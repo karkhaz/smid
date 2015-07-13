@@ -12,7 +12,7 @@ syn match fsaTopComment "\v#.+$"
 hi link   fsaComment Comment
 hi link   fsaTopComment Comment
 
-syn match fsaAction "\v(keys|text|line|click|clik|scroll|scrl|move|move-rel|movr|prob|shell|shel)"
+syn match fsaAction "\v(keys|text|line|click|clik|scroll|scrl|move|move-rel|movr|prob|shell|shel|winc|win-change)"
 hi link   fsaAction   Type
 
 syn match fsaKeyword "\v(all-except|all|stay|pre|post|initial|final|region|\=)"
