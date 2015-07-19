@@ -26,7 +26,6 @@ There are 6 kinds of statement in `smid`:
 <br />
 <br />
 <a href="#regions">Region declarations</a>
-</p>
 </div>
 <div class="block" id="top-demo"><code>
 @import examples/top-demo.sm
