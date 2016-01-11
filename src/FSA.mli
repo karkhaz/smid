@@ -80,6 +80,8 @@ type fsa = {
   hooks:  hook list;
 }
 
+val number_of_transitions : fsa -> int
+
 
 (**  Checks for the following conditions:
  * - There exists at least one initial and one final state

@@ -76,6 +76,7 @@ type fsa = {
   hooks:  hook list;
 }
 
+let number_of_transitions fsa = L.length(fsa.transs)
 
 let error str =
   match !Config.fsa_file with

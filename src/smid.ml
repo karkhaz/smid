@@ -50,6 +50,9 @@ let rec _speclist = [
   ("--debug", Unit (function () -> C.debug := true),
    " Switch on debug output")
   ;
+  ("--stats", Unit (function () -> C.stats := true),
+   " Print out stats on the expanded state machine")
+  ;
   ("--no-sanity-check", Unit (function () -> sanity_check := false),
    " Turn off strict checking of SM file")
   ;
@@ -151,9 +154,14 @@ let () =
     | Some file, Some mode    ->
         let fsa_file = file
         in let mode = mode
-        in let fsa = get_fsa fsa_file
-                  |> normalise
-        in if not (check_fsa fsa)
+        in let file_rep = get_fsa fsa_file
+        in let fsa = normalise file_rep
+        in (if !C.stats
+            then (
+            eprintf "FR:  %d\n" (FileRep.number_of_transitions file_rep);
+            eprintf "FSA: %d\n" (FSA.number_of_transitions fsa))
+            else ();
+        if not (check_fsa fsa)
         then exit 1
         else match mode with
           | C.CompileOnly ->
@@ -173,3 +181,4 @@ let () =
           | C.TransitionGraphs ->
             make_transition_graphs fsa
             ; exit 0
+          )

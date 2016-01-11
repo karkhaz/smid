@@ -19,6 +19,8 @@
 
 let debug = ref false
 
+let stats = ref false
+
 let loops = ref true
 
 let run_length = ref 200

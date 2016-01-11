@@ -59,3 +59,5 @@ type fsa_entry  = InitialStates  of initial_state list
                 | LocationAlias  of (string * coordinates)
 
 type fsa = fsa_entry list
+
+val number_of_transitions : fsa -> int

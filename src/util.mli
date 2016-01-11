@@ -18,7 +18,6 @@
  *)
 
 open Printf
-module L = List
 
 val lines_of_file : string -> string list
 

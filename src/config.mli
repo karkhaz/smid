@@ -19,6 +19,8 @@
 
 val debug : bool ref
 
+val stats : bool ref
+
 val loops : bool ref
 
 val run_length : int ref
